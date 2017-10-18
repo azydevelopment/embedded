@@ -1,0 +1,58 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "taskName": "build_debug",
+            "command": "${env:MSBUILD}",
+            "args": [
+                "embedded_vs2013.sln",
+                "/property:Configuration=Debug",
+                "/property:Platform=x64",
+                "/property:GenerateFullPaths=true",
+                "/t:build"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            // Use the standard MS compiler pattern to detect errors, warnings and infos
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "build_release",
+            "command": "${env:MSBUILD}",
+            "args": [
+                "embedded_vs2013.sln",
+                "/property:Configuration=Release",
+                "/property:Platform=x64",
+                "/property:GenerateFullPaths=true",
+                "/t:build"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            // Use the standard MS compiler pattern to detect errors, warnings and infos
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "clean",
+            "command": "${env:MSBUILD}",
+            "args": [
+                "embedded_vs2013.sln",
+                "/t:Clean"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always"
+            },
+            // Use the standard MS compiler pattern to detect errors, warnings and infos
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

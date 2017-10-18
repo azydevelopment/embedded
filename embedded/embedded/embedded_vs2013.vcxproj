@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\azydev\common\template.h" />
+    <ClInclude Include="include\azydev\embedded\bus\i2c\atmel\avr8\bus.h" />
+    <ClInclude Include="include\azydev\embedded\bus\i2c\atmel\samd21\bus.h" />
+    <ClInclude Include="include\azydev\embedded\bus\i2c\common\bus.h" />
+    <ClInclude Include="include\azydev\embedded\bus\i2c\common\entity.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\atmel\avr8\bus.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\atmel\avr8\device.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\atmel\common\bus.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\atmel\samd21\bus.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\atmel\samd21\device.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\common\bus.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\common\device.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\common\entity.h" />
+    <ClInclude Include="include\azydev\embedded\bus\common\transcoder.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\maxim\max7219\transcoder.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\microchip\mcp2030\packet.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\microchip\mcp2030\transcoder.h" />
+    <ClInclude Include="include\azydev\embedded\bus\spi\texas_instruments\cc1101\transcoder.h" />
+    <ClInclude Include="include\azydev\embedded\data\coding\common\coder.h" />
+    <ClInclude Include="include\azydev\embedded\data\coding\manchester\differential\decoder.h" />
+    <ClInclude Include="include\azydev\embedded\data\coding\manchester\differential\encoder.h" />
+    <ClInclude Include="include\azydev\embedded\data\coding\manchester\standard\decoder.h" />
+    <ClInclude Include="include\azydev\embedded\data\coding\manchester\standard\encoder.h" />
+    <ClInclude Include="include\azydev\embedded\pins\atmel\samd21\pins.h" />
+    <ClInclude Include="include\azydev\embedded\pins\common\pins.h" />
+    <ClInclude Include="include\azydev\embedded\test\bus\i2c\case_manager.h" />
+    <ClInclude Include="include\azydev\embedded\test\bus\i2c\case_worker.h" />
+    <ClInclude Include="include\azydev\embedded\test\bus\spi\case_manager.h" />
+    <ClInclude Include="include\azydev\embedded\test\bus\spi\case_worker.h" />
+    <ClInclude Include="include\azydev\embedded\test\util\case_binary.h" />
+    <ClInclude Include="include\azydev\embedded\time\common\time.h" />
+    <ClInclude Include="include\azydev\embedded\util\binary.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\azydev\embedded\bus\common\transcoder.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\i2c\atmel\avr8\bus.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\i2c\atmel\samd21\bus.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\i2c\common\bus.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\i2c\common\entity.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\atmel\avr8\bus.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\atmel\avr8\device.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\atmel\samd21\bus.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\atmel\samd21\device.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\common\bus.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\common\device.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\common\entity.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\maxim\max7219\transcoder.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\microchip\mcp2030\packet.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\microchip\mcp2030\transcoder.cpp" />
+    <ClCompile Include="src\azydev\embedded\bus\spi\texas_instruments\cc1101\transcoder.cpp" />
+    <ClCompile Include="src\azydev\embedded\data\coding\manchester\differential\decoder.cpp" />
+    <ClCompile Include="src\azydev\embedded\data\coding\manchester\differential\encoder.cpp" />
+    <ClCompile Include="src\azydev\embedded\data\coding\manchester\standard\decoder.cpp" />
+    <ClCompile Include="src\azydev\embedded\data\coding\manchester\standard\encoder.cpp" />
+    <ClCompile Include="src\azydev\embedded\logging\atmel\samd21\logger.cpp" />
+    <ClCompile Include="src\azydev\embedded\pins\atmel\samd21\pins.cpp" />
+    <ClCompile Include="src\azydev\embedded\pins\common\pins.cpp" />
+    <ClCompile Include="src\azydev\embedded\test\bus\i2c\case_manager.cpp" />
+    <ClCompile Include="src\azydev\embedded\test\bus\i2c\case_worker.cpp" />
+    <ClCompile Include="src\azydev\embedded\test\bus\spi\case_manager.cpp" />
+    <ClCompile Include="src\azydev\embedded\test\bus\spi\case_worker.cpp" />
+    <ClCompile Include="src\azydev\embedded\test\util\case_binary.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4750E354-566E-445E-B673-A13C2FA64548}</ProjectGuid>
+    <RootNamespace>embedded_core_vs2013</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/include</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)/include</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+      <AdditionalIncludeDirectories>$(INCLUDE)</AdditionalIncludeDirectories>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <AssemblerListingLocation>$(IntDir)/%(RelativeDir)/</AssemblerListingLocation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
+      <AdditionalIncludeDirectories>$(INCLUDE)</AdditionalIncludeDirectories>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <AssemblerListingLocation>$(IntDir)/%(RelativeDir)/</AssemblerListingLocation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

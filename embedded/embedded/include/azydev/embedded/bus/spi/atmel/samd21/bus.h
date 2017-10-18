@@ -1,0 +1,128 @@
+/*
+* Copyright (C) Andrew Yeung - All Rights Reserved
+* Unauthorized copying of this file, via any medium is strictly prohibited
+* Proprietary and confidential
+* Written by Andrew Yeung <azy.development@gmail.com>, May 2017
+*/
+
+#pragma once
+
+#include <azydev/embedded/util/binary.h>
+
+#include <azydev/embedded/bus/spi/common/bus.h>
+
+#include <asf/sam0/drivers/sercom/sercom.h>
+
+class CPinsAtmelSAMD21;
+
+class CSPIBusAtmelSAMD21 final : public CSPIBus<uint16_t>
+{
+public:
+    enum class FRAME_FORMAT : uint8_t
+    {
+        UNDEFINED = 255,
+        SPI       = 0,
+        SPI_ADDR  = 2
+    };
+
+    enum class DATA_IN_PINOUT : uint8_t
+    {
+        UNDEFINED = 255,
+        PAD_0     = 0,
+        PAD_1     = 1,
+        PAD_2     = 2,
+        PAD_3     = 3
+    };
+
+    enum class DATA_OUT_PINOUT : uint8_t
+    {
+        UNDEFINED                = 255,
+        DO_PAD0_SCK_PAD1_SS_PAD2 = 0,
+        DO_PAD2_SCK_PAD3_SS_PAD1 = 1,
+        DO_PAD3_SCK_PAD1_SS_PAD2 = 2,
+        DO_PAD0_SCK_PAD3_SS_PAD1 = 3
+    };
+
+    enum class OPERATING_MODE : uint8_t
+    {
+        UNDEFINED = 255,
+        WORKER     = 2,
+        MANAGER    = 3
+    };
+
+    enum class ADDRESS_MODE : uint8_t
+    {
+        UNDEFINED = 255,
+        MASK      = 0,
+        TWO_ADDRS = 1,
+        RANGE     = 2
+    };
+
+    enum class CHARACTER_SIZE : uint8_t
+    {
+        UNDEFINED = 255,
+        BITS_8    = 0,
+        BITS_9    = 1
+    };
+
+    struct CONFIG_DESC : CSPIBus<uint16_t>::CONFIG_DESC
+    {
+        FRAME_FORMAT frame_format                   = FRAME_FORMAT::UNDEFINED;
+        DATA_IN_PINOUT data_in_pinout               = DATA_IN_PINOUT::UNDEFINED;
+        DATA_OUT_PINOUT data_out_pinout             = DATA_OUT_PINOUT::UNDEFINED;
+        bool immediate_buffer_overflow_notification = false;
+        bool run_in_standby                         = false;
+        ADDRESS_MODE address_mode                   = ADDRESS_MODE::UNDEFINED;
+        bool enable_manager_worker_select             = false;
+        bool enable_worker_select_low_detect         = false;
+        bool enable_worker_data_preload              = false;
+        CHARACTER_SIZE character_size               = CHARACTER_SIZE::UNDEFINED;
+        uint8_t baud_rate                           = false;
+        bool enable_interrupt_error                 = false;
+        bool enable_interrupt_worker_select_low      = false;
+        bool enable_interrupt_receive_complete      = false;
+        bool enable_interrupt_transmit_complete     = false;
+        bool enable_interrupt_data_register_empty   = false;
+    };
+
+    struct PIN_CONFIG_DESC
+    {
+        uint32_t pad0 = 0;
+        uint32_t pad1 = 0;
+        uint32_t pad2 = 0;
+        uint32_t pad3 = 0;
+    };
+
+    struct DESC : CSPIBus<uint16_t>::DESC
+    { PIN_CONFIG_DESC pin_config = {}; };
+
+    // constructor
+    CSPIBusAtmelSAMD21(const DESC&, CPinsAtmelSAMD21&);
+
+    // destructor
+    virtual ~CSPIBusAtmelSAMD21() override;
+
+private:
+    // member variables
+    SercomSpi* m_sercom_spi;
+    CPinsAtmelSAMD21& m_service_pins;
+    PIN_CONFIG_DESC m_pin_config;
+    CONFIG_DESC m_bus_config;
+    DUPLEX_MODE m_duplex_mode;
+
+    // methods
+    STATUS WaitForBusSync();
+    STATUS WaitForTransfer();
+
+    // CSPIEntity
+    virtual STATUS SetRole_impl(const ROLE) override final;
+
+    // CSPIBus
+    virtual void SetConfig_impl(const CSPIBus::CONFIG_DESC&) override final;
+    virtual STATUS SetEnabled_impl(const bool) override final;
+    virtual STATUS SetDuplexMode_impl(const DUPLEX_MODE) override final;
+    virtual STATUS Start_impl(const uint8_t deviceId) override final;
+    virtual STATUS Write_impl(const uint16_t) override final;
+    virtual STATUS Read_impl(uint16_t&) override final;
+    virtual STATUS Stop_impl() override final;
+};
