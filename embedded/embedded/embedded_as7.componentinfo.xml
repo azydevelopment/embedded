@@ -63,7 +63,7 @@
 							<Attribute>template</Attribute>
 							<Category>source</Category>
 							<Condition>C Lib</Condition>
-							<FileContentHash>PCxm/BsgCIxJeOD4KIDQUg==</FileContentHash>
+							<FileContentHash>A6CtkScmRPo5iQcWfSbq4Q==</FileContentHash>
 							<FileVersion></FileVersion>
 							<Name>samd21a/templates/library.cpp</Name>
 							<SelectString>Main file (.cpp)</SelectString>
