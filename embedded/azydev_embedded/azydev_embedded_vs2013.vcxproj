@@ -78,6 +78,7 @@
     <ProjectGuid>{4750E354-566E-445E-B673-A13C2FA64548}</ProjectGuid>
     <RootNamespace>embedded_core_vs2013</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>azydev_embedded_vs2013</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

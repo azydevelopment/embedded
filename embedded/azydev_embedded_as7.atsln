@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Atmel Studio Solution File, Format Version 11.00
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E66E83B9-2572-4076-B26E-6BE79FF3018A}") = "embedded_as7", "embedded\embedded_as7.cppproj", "{C5CA14FD-3E3D-4E44-BD41-008034BE746F}"
+Project("{E66E83B9-2572-4076-B26E-6BE79FF3018A}") = "azydev_embedded_as7", "azydev_embedded\azydev_embedded_as7.cppproj", "{C5CA14FD-3E3D-4E44-BD41-008034BE746F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

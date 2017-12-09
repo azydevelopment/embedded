@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "embedded_vs2013", "embedded\embedded_vs2013.vcxproj", "{4750E354-566E-445E-B673-A13C2FA64548}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "azydev_embedded_vs2013", "azydev_embedded\azydev_embedded_vs2013.vcxproj", "{4750E354-566E-445E-B673-A13C2FA64548}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
