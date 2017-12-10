@@ -449,6 +449,8 @@
         </armgcccpp.preprocessingassembler.general.IncludePaths>
       </ArmGccCpp>
     </ToolchainSettings>
+    <OutputFileName>libazydev_embedded_as7</OutputFileName>
+    <OutputFileExtension>.a</OutputFileExtension>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
@@ -654,7 +656,7 @@
         <armgcccpp.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcccpp.preprocessingassembler.debugging.DebugLevel>
       </ArmGccCpp>
     </ToolchainSettings>
-    <OutputFileName>libembedded_as7</OutputFileName>
+    <OutputFileName>libazydev_embedded_as7</OutputFileName>
     <OutputFileExtension>.a</OutputFileExtension>
   </PropertyGroup>
   <ItemGroup>
