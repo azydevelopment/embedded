@@ -4,10 +4,10 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "taskName": "build_debug",
+            "label": "build_debug",
             "command": "${env:MSBUILD}",
             "args": [
-                "embedded_vs2013.sln",
+                "azydev_embedded_vs2013.sln",
                 "/property:Configuration=Debug",
                 "/property:Platform=x64",
                 "/property:GenerateFullPaths=true",
@@ -24,10 +24,10 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "taskName": "build_release",
+            "label": "build_release",
             "command": "${env:MSBUILD}",
             "args": [
-                "embedded_vs2013.sln",
+                "azydev_embedded_vs2013.sln",
                 "/property:Configuration=Release",
                 "/property:Platform=x64",
                 "/property:GenerateFullPaths=true",
@@ -41,10 +41,10 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "taskName": "clean",
+            "label": "clean",
             "command": "${env:MSBUILD}",
             "args": [
-                "embedded_vs2013.sln",
+                "azydev_embedded_vs2013.sln",
                 "/t:Clean"
             ],
             "group": "build",

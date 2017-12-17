@@ -4,7 +4,7 @@
             "name": "x64",
             "includePath": [
                 "${env:INCLUDE}",
-                "${workspaceRoot}/embedded/include/"
+                "${workspaceRoot}/azydev_embedded/include/"
             ],
             "defines": [
                 "_DEBUG",
@@ -14,7 +14,7 @@
             "browse": {
                 "path": [
                     "${env:INCLUDE}",
-                    "${workspaceRoot}/embedded/include/"
+                    "${workspaceRoot}/azydev_embedded/include/"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
