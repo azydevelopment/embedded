@@ -67,11 +67,12 @@ public:
     virtual ~CPins();
 
     // NVI
-    void SetPinConfig(const PIN_TYPE pinId, const CONFIG_DESC&);
-    void PinWriteDigital(const PIN_TYPE pinId, const DIGITAL_STATE);
-    uint8_t PinReadDigital(const PIN_TYPE pinId) const;
-    void EnableInterrupt(const PIN_TYPE pinId, const INTERRUPT_TRIGGER, const bool ignorePending);
-    void DisableInterrupt(const PIN_TYPE pinId);
+    virtual void SetPinConfig(const PIN_TYPE pinId, const CONFIG_DESC&) final;
+    virtual void PinWriteDigital(const PIN_TYPE pinId, const DIGITAL_STATE) final;
+    virtual uint8_t PinReadDigital(const PIN_TYPE pinId) const final;
+    virtual void
+    EnableInterrupt(const PIN_TYPE pinId, const INTERRUPT_TRIGGER, const bool ignorePending) final;
+    virtual void DisableInterrupt(const PIN_TYPE pinId) final;
 
 protected:
     // constructor
