@@ -61,8 +61,8 @@ public:
     enum class OPERATING_MODE : uint8_t
     {
         UNDEFINED = 255,
-        WORKER     = 2,
-        MANAGER    = 3
+        WORKER    = 2,
+        MANAGER   = 3
     };
 
     enum class ADDRESS_MODE : uint8_t
@@ -88,13 +88,13 @@ public:
         bool immediate_buffer_overflow_notification = false;
         bool run_in_standby                         = false;
         ADDRESS_MODE address_mode                   = ADDRESS_MODE::UNDEFINED;
-        bool enable_manager_worker_select             = false;
-        bool enable_worker_select_low_detect         = false;
-        bool enable_worker_data_preload              = false;
+        bool enable_manager_worker_select           = false;
+        bool enable_worker_select_low_detect        = false;
+        bool enable_worker_data_preload             = false;
         CHARACTER_SIZE character_size               = CHARACTER_SIZE::UNDEFINED;
         uint8_t baud_rate                           = false;
         bool enable_interrupt_error                 = false;
-        bool enable_interrupt_worker_select_low      = false;
+        bool enable_interrupt_worker_select_low     = false;
         bool enable_interrupt_receive_complete      = false;
         bool enable_interrupt_transmit_complete     = false;
         bool enable_interrupt_data_register_empty   = false;
