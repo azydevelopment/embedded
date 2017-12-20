@@ -4,7 +4,21 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build_debug",
+            "label": "build_as7",
+            "command": "powershell",
+            "args": [
+                "${env:UTIL}/util_build_embedded_as7.ps1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "build_vs2013_debug",
             "command": "${env:MSBUILD}",
             "args": [
                 "azydev_embedded_vs2013.sln",
@@ -13,10 +27,7 @@
                 "/property:GenerateFullPaths=true",
                 "/t:build"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "group": "build",
             "presentation": {
                 "reveal": "always"
             },
@@ -24,7 +35,7 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "build_release",
+            "label": "build_vs2013_release",
             "command": "${env:MSBUILD}",
             "args": [
                 "azydev_embedded_vs2013.sln",
@@ -41,7 +52,7 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "clean",
+            "label": "clean_vs2013",
             "command": "${env:MSBUILD}",
             "args": [
                 "azydev_embedded_vs2013.sln",
