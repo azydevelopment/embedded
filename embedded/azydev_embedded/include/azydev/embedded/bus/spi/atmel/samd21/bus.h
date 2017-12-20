@@ -83,8 +83,6 @@ public:
     struct CONFIG_DESC : CSPIBus<uint16_t>::CONFIG_DESC
     {
         FRAME_FORMAT frame_format                   = FRAME_FORMAT::UNDEFINED;
-        DATA_IN_PINOUT data_in_pinout               = DATA_IN_PINOUT::UNDEFINED;
-        DATA_OUT_PINOUT data_out_pinout             = DATA_OUT_PINOUT::UNDEFINED;
         bool immediate_buffer_overflow_notification = false;
         bool run_in_standby                         = false;
         ADDRESS_MODE address_mode                   = ADDRESS_MODE::UNDEFINED;
@@ -102,10 +100,12 @@ public:
 
     struct PIN_CONFIG_DESC
     {
-        uint32_t pad0 = 0;
-        uint32_t pad1 = 0;
-        uint32_t pad2 = 0;
-        uint32_t pad3 = 0;
+        uint32_t pad0                   = 0;
+        uint32_t pad1                   = 0;
+        uint32_t pad2                   = 0;
+        uint32_t pad3                   = 0;
+        DATA_IN_PINOUT data_in_pinout   = DATA_IN_PINOUT::UNDEFINED;
+        DATA_OUT_PINOUT data_out_pinout = DATA_OUT_PINOUT::UNDEFINED;
     };
 
     struct DESC : CSPIBus<uint16_t>::DESC

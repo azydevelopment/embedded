@@ -156,7 +156,7 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::SetEnabled_impl(bool enable) {
                     ctrla,
                     SERCOM_SPI_CTRLA_DIPO_Pos,
                     2,
-                    static_cast<uint32_t>(m_bus_config.data_in_pinout));
+                    static_cast<uint32_t>(m_pin_config.data_in_pinout));
             }
 
             // select data out pinout
@@ -167,7 +167,7 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::SetEnabled_impl(bool enable) {
                     ctrla,
                     SERCOM_SPI_CTRLA_DOPO_Pos,
                     2,
-                    static_cast<uint32_t>(m_bus_config.data_out_pinout));
+                    static_cast<uint32_t>(m_pin_config.data_out_pinout));
             }
 
             // select data order
