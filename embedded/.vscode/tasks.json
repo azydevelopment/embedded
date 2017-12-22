@@ -4,15 +4,26 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build_as7",
+            "label": "build_as7_debug",
             "command": "powershell",
             "args": [
-                "${env:UTIL}/util_build_embedded_as7.ps1"
+                "${env:UTIL}/util_build_embedded_as7.ps1 debug"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "build_as7_release",
+            "command": "powershell",
+            "args": [
+                "${env:UTIL}/util_build_embedded_as7.ps1release"
+            ],
+            "group": "build",
             "presentation": {
                 "reveal": "always"
             }
