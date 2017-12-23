@@ -38,6 +38,48 @@ CClockAtmelSAMD21::~CClockAtmelSAMD21() {
 
 /* PRIVATE */
 
+// static functions
+
+void CClockAtmelSAMD21::SetPmMask(const BUS bus, const uint32_t pmIndex, const bool enabled) {
+    if (enabled) {
+        switch (bus) {
+        case BUS::AHB:
+            PM->AHBMASK.reg |= 1 << pmIndex;
+            break;
+        case BUS::APBA:
+            PM->APBAMASK.reg |= 1 << pmIndex;
+            break;
+        case BUS::APBB:
+            PM->APBBMASK.reg |= 1 << pmIndex;
+            break;
+        case BUS::APBC:
+            PM->APBCMASK.reg |= 1 << pmIndex;
+            break;
+        default:
+            // TODO ERROR_HANDLING
+            break;
+        }
+    } else {
+        switch (bus) {
+        case BUS::AHB:
+            PM->AHBMASK.reg |= 1 << pmIndex;
+            break;
+        case BUS::APBA:
+            PM->APBAMASK.reg |= 1 << pmIndex;
+            break;
+        case BUS::APBB:
+            PM->APBBMASK.reg |= 1 << pmIndex;
+            break;
+        case BUS::APBC:
+            PM->APBCMASK.reg |= 1 << pmIndex;
+            break;
+        default:
+            // TODO ERROR_HANDLING
+            break;
+        }
+    }
+}
+
 // CClock
 
 void CClockAtmelSAMD21::SetConfig_impl(const CClock::CONFIG_DESC& config) {
@@ -47,26 +89,15 @@ void CClockAtmelSAMD21::SetConfig_impl(const CClock::CONFIG_DESC& config) {
 void CClockAtmelSAMD21::SetState_impl(const CClock::STATE state) {
     switch (state) {
     case CClock::STATE::CS0:
-        // TODO IMPLEMENT: disabled state
+        // disable PM
+        SetPmMask(m_bus, m_pm_index, false);
+		
+		system_gclk_chan_disable(GetId());
         break;
+
     case CClock::STATE::CS1:
-        switch (m_bus) {
-        case BUS::AHB:
-            PM->AHBMASK.reg |= 1 << m_pm_index;
-            break;
-        case BUS::APBA:
-            PM->APBAMASK.reg |= 1 << m_pm_index;
-            break;
-        case BUS::APBB:
-            PM->APBBMASK.reg |= 1 << m_pm_index;
-            break;
-        case BUS::APBC:
-            PM->APBCMASK.reg |= 1 << m_pm_index;
-            break;
-        default:
-            // TODO ERROR_HANDLING
-            break;
-        }
+        // enable PM
+        SetPmMask(m_bus, m_pm_index, true);
 
         struct system_gclk_chan_config gclk_chan_conf;
 
