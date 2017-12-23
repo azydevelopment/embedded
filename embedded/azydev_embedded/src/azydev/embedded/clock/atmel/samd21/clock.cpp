@@ -41,19 +41,20 @@ CClockAtmelSAMD21::~CClockAtmelSAMD21() {
 // static functions
 
 void CClockAtmelSAMD21::SetPmMask(const BUS bus, const uint32_t pmIndex, const bool enabled) {
+    uint32_t mask = 1 << pmIndex;
     if (enabled) {
         switch (bus) {
         case BUS::AHB:
-            PM->AHBMASK.reg |= 1 << pmIndex;
+            PM->AHBMASK.reg |= mask;
             break;
         case BUS::APBA:
-            PM->APBAMASK.reg |= 1 << pmIndex;
+            PM->APBAMASK.reg |= mask;
             break;
         case BUS::APBB:
-            PM->APBBMASK.reg |= 1 << pmIndex;
+            PM->APBBMASK.reg |= mask;
             break;
         case BUS::APBC:
-            PM->APBCMASK.reg |= 1 << pmIndex;
+            PM->APBCMASK.reg |= mask;
             break;
         default:
             // TODO ERROR_HANDLING
@@ -62,16 +63,16 @@ void CClockAtmelSAMD21::SetPmMask(const BUS bus, const uint32_t pmIndex, const b
     } else {
         switch (bus) {
         case BUS::AHB:
-            PM->AHBMASK.reg |= 1 << pmIndex;
+            PM->AHBMASK.reg &= ~mask;
             break;
         case BUS::APBA:
-            PM->APBAMASK.reg |= 1 << pmIndex;
+            PM->APBAMASK.reg &= ~mask;
             break;
         case BUS::APBB:
-            PM->APBBMASK.reg |= 1 << pmIndex;
+            PM->APBBMASK.reg &= ~mask;
             break;
         case BUS::APBC:
-            PM->APBCMASK.reg |= 1 << pmIndex;
+            PM->APBCMASK.reg &= ~mask;
             break;
         default:
             // TODO ERROR_HANDLING
