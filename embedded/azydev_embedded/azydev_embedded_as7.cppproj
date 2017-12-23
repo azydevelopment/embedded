@@ -682,6 +682,8 @@
     <Folder Include="include\azydev\embedded\bus\spi\microchip\mcp2030\" />
     <Folder Include="include\azydev\embedded\bus\spi\texas_instruments\" />
     <Folder Include="include\azydev\embedded\bus\spi\texas_instruments\cc1101\" />
+    <Folder Include="include\azydev\embedded\clock\atmel" />
+    <Folder Include="include\azydev\embedded\clock\atmel\samd21" />
     <Folder Include="include\azydev\embedded\data\" />
     <Folder Include="include\azydev\embedded\data\coding\" />
     <Folder Include="include\azydev\embedded\data\coding\common\" />
@@ -695,6 +697,8 @@
     <Folder Include="include\azydev\embedded\pins\atmel\" />
     <Folder Include="include\azydev\embedded\pins\atmel\samd21\" />
     <Folder Include="include\azydev\embedded\pins\common\" />
+    <Folder Include="include\azydev\embedded\clock" />
+    <Folder Include="include\azydev\embedded\clock\common" />
     <Folder Include="include\azydev\embedded\test\" />
     <Folder Include="include\azydev\embedded\test\bus\" />
     <Folder Include="include\azydev\embedded\test\bus\i2c\" />
@@ -788,6 +792,9 @@
     <Folder Include="src\azydev\embedded\bus\spi\microchip\mcp2030\" />
     <Folder Include="src\azydev\embedded\bus\spi\texas_instruments\" />
     <Folder Include="src\azydev\embedded\bus\spi\texas_instruments\cc1101\" />
+    <Folder Include="src\azydev\embedded\clock\atmel\samd21" />
+    <Folder Include="src\azydev\embedded\clock\common" />
+    <Folder Include="src\azydev\embedded\clock\atmel" />
     <Folder Include="src\azydev\embedded\data\" />
     <Folder Include="src\azydev\embedded\data\coding\" />
     <Folder Include="src\azydev\embedded\data\coding\manchester\" />
@@ -796,6 +803,7 @@
     <Folder Include="src\azydev\embedded\logging" />
     <Folder Include="src\azydev\embedded\logging\atmel" />
     <Folder Include="src\azydev\embedded\logging\atmel\samd21" />
+    <Folder Include="src\azydev\embedded\clock" />
     <Folder Include="src\azydev\embedded\pins\" />
     <Folder Include="src\azydev\embedded\pins\atmel\" />
     <Folder Include="src\azydev\embedded\pins\atmel\samd21\" />
@@ -857,6 +865,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\azydev\embedded\bus\spi\texas_instruments\cc1101\transcoder.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\azydev\embedded\clock\atmel\samd21\clock.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\azydev\embedded\clock\common\clock.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\azydev\embedded\data\coding\common\coder.h">
@@ -1529,6 +1543,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\azydev\embedded\bus\spi\texas_instruments\cc1101\transcoder.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\azydev\embedded\clock\atmel\samd21\clock.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\azydev\embedded\clock\common\clock.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\azydev\embedded\data\coding\manchester\differential\decoder.cpp">
