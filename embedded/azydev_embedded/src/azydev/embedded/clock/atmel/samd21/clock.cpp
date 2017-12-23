@@ -91,8 +91,8 @@ void CClockAtmelSAMD21::SetState_impl(const CClock::STATE state) {
     case CClock::STATE::CS0:
         // disable PM
         SetPmMask(m_bus, m_pm_index, false);
-		
-		system_gclk_chan_disable(GetId());
+
+        system_gclk_chan_disable(GetId());
         break;
 
     case CClock::STATE::CS1:
