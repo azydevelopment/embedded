@@ -109,7 +109,8 @@ public:
     };
 
     struct DESC : CSPIBus<uint16_t>::DESC
-    { PIN_CONFIG_DESC pin_config = {}; };
+    {	SercomSpi* sercomSpi = nullptr;
+		PIN_CONFIG_DESC pin_config = {}; };
 
     // constructor
     CSPIBusAtmelSAMD21(const DESC&, CPinsAtmelSAMD21&);
