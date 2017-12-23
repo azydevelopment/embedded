@@ -86,16 +86,8 @@ void CClockAtmelSAMD21::SetConfig_impl(const CClock::CONFIG_DESC& config) {
     m_config = static_cast<const CONFIG_DESC&>(config);
 }
 
-void CClockAtmelSAMD21::SetState_impl(const CClock::STATE state) {
-    switch (state) {
-    case CClock::STATE::CS0:
-        // disable PM
-        SetPmMask(m_bus, m_pm_index, false);
-
-        system_gclk_chan_disable(GetId());
-        break;
-
-    case CClock::STATE::CS1:
+void CClockAtmelSAMD21::SetEnabled_impl(const bool enabled) {
+    if (enabled) {
         // enable PM
         SetPmMask(m_bus, m_pm_index, true);
 
@@ -109,6 +101,10 @@ void CClockAtmelSAMD21::SetState_impl(const CClock::STATE state) {
 
         // TODO IMPLEMENT: Need this sometimes when enabling SERCOM clocks?
         // sercom_set_gclk_generator(gclk_chan_conf.source_generator, false);
-        break;
+    } else {
+        // disable PM
+        SetPmMask(m_bus, m_pm_index, false);
+
+        system_gclk_chan_disable(GetId());
     }
 }

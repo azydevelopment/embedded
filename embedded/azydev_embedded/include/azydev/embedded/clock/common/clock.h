@@ -27,12 +27,6 @@
 class CClock
 {
 public:
-    enum class STATE : uint8_t
-    {
-        CS0, // disabled
-        CS1  // enabled
-    };
-
     struct DESC
     { uint8_t id; };
 
@@ -45,8 +39,7 @@ public:
     // NVI
     virtual uint8_t GetId() const final;
     virtual void SetConfig(const CONFIG_DESC&) final;
-    virtual void Acquire() final;
-    virtual void Release() final;
+    virtual void SetEnabled(const bool) final;
 
 protected:
     // constructor
@@ -59,14 +52,8 @@ private:
 
     // member variables
     uint8_t m_id;
-    uint8_t m_num_consumers;
-    STATE m_state;
-
-    // final
-    STATE GetState() const;
-    void SetState(const STATE);
 
     // abstract
     virtual void SetConfig_impl(const CONFIG_DESC&) = 0;
-    virtual void SetState_impl(const STATE)         = 0;
+    virtual void SetEnabled_impl(const bool)        = 0;
 };

@@ -64,10 +64,10 @@ private:
     uint32_t m_pm_index;
     CONFIG_DESC m_config;
 
-	// static functions
-	static void SetPmMask(const BUS, const uint32_t pmIndex, const bool enabled);
+    // static functions
+    static void SetPmMask(const BUS, const uint32_t pmIndex, const bool enabled);
 
     // CClock
     virtual void SetConfig_impl(const CClock::CONFIG_DESC&) override final;
-    virtual void SetState_impl(const CClock::STATE) override final;
+    virtual void SetEnabled_impl(const bool) override final;
 };

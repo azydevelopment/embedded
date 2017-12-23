@@ -36,44 +36,12 @@ void CClock::SetConfig(const CONFIG_DESC& config) {
     SetConfig_impl(config);
 }
 
-void CClock::Acquire() {
-    // enable clock if currently disabled
-    if (GetState() == STATE::CS0) {
-        SetState(STATE::CS1);
-    }
-
-    // be sure only to increment after the clock has actually been enabled
-    m_num_consumers++;
-}
-
-void CClock::Release() {
-    // TODO ERROR_HANDLING: over releasing
-
-    m_num_consumers--;
-
-    // if nothing is using this clock, disable it
-    if (m_num_consumers == 0) {
-        SetState(STATE::CS0);
-    }
+void CClock::SetEnabled(const bool enabled) {
+    SetEnabled_impl(enabled);
 }
 
 /* PROTECTED */
 
 CClock::CClock(const DESC& desc)
-    : m_id(desc.id)
-    , m_num_consumers(0)
-    , m_state(STATE::CS0) {
-}
-
-/* PRIVATE */
-
-// final
-
-CClock::STATE CClock::GetState() const {
-    return m_state;
-}
-
-void CClock::SetState(const STATE state) {
-    SetState_impl(state);
-    m_state = state;
+    : m_id(desc.id) {
 }
