@@ -33,9 +33,7 @@ CI2CBusAtmelSAMD21::CI2CBusAtmelSAMD21(const DESC& desc, CPinsAtmelSAMD21& servi
     , m_service_pins(servicePins)
     , m_config({})
     , m_pin_config(desc.pin_config)
-    , m_sercom_i2c(nullptr) {
-    // TODO HACK: Hardcoded to SERCOM0
-    m_sercom_i2c = &(SERCOM0->I2CM);
+    , m_sercom_i2c(desc.sercomI2c) {
 }
 
 CI2CBusAtmelSAMD21::~CI2CBusAtmelSAMD21() {
@@ -76,25 +74,6 @@ CI2CEntity::STATUS CI2CBusAtmelSAMD21::SetEnabled_impl(const bool enabled) {
     // TODO ERROR_HANDLING: Handle if already enabled
     if (enabled) {
         // TODO ERROR_HANDLING: Check that the bus is configured to have a role other than UNDEFINED
-
-        // setup clocks
-        // TODO HACK: Better abstract clock setup
-        {
-            uint32_t sercom_index = _sercom_get_sercom_inst_index(SERCOM0);
-            uint32_t pm_index, gclk_index;
-            pm_index   = sercom_index + PM_APBCMASK_SERCOM0_Pos;
-            gclk_index = sercom_index + SERCOM0_GCLK_ID_CORE;
-
-            system_apb_clock_set_mask(SYSTEM_CLOCK_APB_APBC, 1 << pm_index);
-
-            // TODO HACK: Hardcoded clock generator source
-            struct system_gclk_chan_config gclk_chan_conf;
-            gclk_chan_conf.source_generator = GCLK_GENERATOR_0;
-
-            system_gclk_chan_set_config(gclk_index, &gclk_chan_conf);
-            system_gclk_chan_enable(gclk_index);
-            sercom_set_gclk_generator(gclk_chan_conf.source_generator, false);
-        }
 
         // setup pins
         {

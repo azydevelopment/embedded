@@ -74,15 +74,15 @@ public:
     struct CONFIG_DESC : CI2CBus::CONFIG_DESC
     {
         // ctrla
-        bool enable_scl_low_timeout               = false;
-        INACTIVE_TIMEOUT inactive_timeout         = INACTIVE_TIMEOUT::DISABLED;
-        SCL_CLK_STRETCH_MODE scl_clk_stretch_mode = SCL_CLK_STRETCH_MODE::DEFAULT;
-        TRANSFER_SPEED transfer_speed             = TRANSFER_SPEED::STANDARD;
+        bool enable_scl_low_timeout                = false;
+        INACTIVE_TIMEOUT inactive_timeout          = INACTIVE_TIMEOUT::DISABLED;
+        SCL_CLK_STRETCH_MODE scl_clk_stretch_mode  = SCL_CLK_STRETCH_MODE::DEFAULT;
+        TRANSFER_SPEED transfer_speed              = TRANSFER_SPEED::STANDARD;
         bool enable_worker_scl_low_extend_timeout  = false;
         bool enable_manager_scl_low_extend_timeout = false;
-        SDA_HOLD_TIME sda_hold_time               = SDA_HOLD_TIME::DISABLED;
-        bool enable_four_wire                     = false;
-        bool enable_run_in_standby                = false;
+        SDA_HOLD_TIME sda_hold_time                = SDA_HOLD_TIME::DISABLED;
+        bool enable_four_wire                      = false;
+        bool enable_run_in_standby                 = false;
 
         // ctrlb
         bool enable_smart_mode = false;
@@ -94,8 +94,12 @@ public:
         uint8_t manager_baud                = 0;
     };
 
+    // TODO HACK: Limited to M implementation of SercomI2cm
     struct DESC : CI2CBus::DESC
-    { PIN_CONFIG_DESC pin_config = {}; };
+    {
+        SercomI2cm* sercomI2c      = nullptr;
+        PIN_CONFIG_DESC pin_config = {};
+    };
 
     // constructor
     CI2CBusAtmelSAMD21(const DESC&, CPinsAtmelSAMD21&);
