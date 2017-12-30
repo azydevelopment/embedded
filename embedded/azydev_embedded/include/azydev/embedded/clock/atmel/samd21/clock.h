@@ -45,6 +45,7 @@ public:
         uint32_t pm_index = 0;
     };
 
+    // TODO IMPLEMENT: Clock division control
     struct CONFIG_DESC : CClock::CONFIG_DESC
     { uint8_t clock_source_generator = 0; };
 
