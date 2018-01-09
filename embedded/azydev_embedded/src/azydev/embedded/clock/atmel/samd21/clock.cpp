@@ -101,29 +101,33 @@ void CClockAtmelSAMD21::SetEnabled_impl(const bool enabled) {
         }
     }
 
-    if (enabled) {
-        // prepare a new gclk clkctrl register
-        uint32_t clkctrl = 0;
-        {
-            // target this clock ID
-            clkctrl |= GetId();
+    // enable/disable GCLK
+    if (m_desc.clock_gclk != CLOCK_GCLK::UNDEFINED) {
+        uint8_t gclk = static_cast<uint8_t>(m_desc.clock_gclk);
+        if (enabled) {
+            // prepare a new gclk clkctrl register
+            uint32_t clkctrl = 0;
+            {
+                // target this clock ID
+                clkctrl |= gclk;
 
-            // set the generator
-            clkctrl |= static_cast<uint8_t>(m_config.generator) << 8;
+                // set the generator
+                clkctrl |= static_cast<uint8_t>(m_config.generator) << 8;
+            }
+
+            // disable this gclk for now
+            system_gclk_chan_disable(gclk);
+
+            // write the new clkctrl register config
+            GCLK->CLKCTRL.reg = clkctrl;
+
+            // reenable the gclk
+            system_gclk_chan_enable(gclk);
+
+            // TODO IMPLEMENT: Need this sometimes when enabling SERCOM clocks?
+            // sercom_set_gclk_generator(gclk_chan_conf.source_generator, false);
+        } else {
+            system_gclk_chan_disable(gclk);
         }
-
-        // disable this gclk for now
-        system_gclk_chan_disable(GetId());
-
-        // write the new clkctrl register config
-        GCLK->CLKCTRL.reg = clkctrl;
-
-        // reenable the gclk
-        system_gclk_chan_enable(GetId());
-
-        // TODO IMPLEMENT: Need this sometimes when enabling SERCOM clocks?
-        // sercom_set_gclk_generator(gclk_chan_conf.source_generator, false);
-    } else {
-        system_gclk_chan_disable(GetId());
     }
 }

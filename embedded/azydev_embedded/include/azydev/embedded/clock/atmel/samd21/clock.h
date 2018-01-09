@@ -70,7 +70,7 @@ public:
         CLOCK_PTC,
         CLOCK_I2S_0,
         CLOCK_I2S_1,
-        CLOCK_UNDEFINED = 0xFF
+        UNDEFINED = 0xFF
     };
 
     enum class CLOCK_AHB : uint8_t
@@ -151,6 +151,7 @@ public:
     struct DESC : CClock::DESC
     {
         // TODO HACK: Move PM index elsewhere?
+        CLOCK_GCLK clock_gclk = CLOCK_GCLK::UNDEFINED;
         CLOCK_AHB clock_ahb   = CLOCK_AHB::UNDEFINED;
         CLOCK_APBA clock_apba = CLOCK_APBA::UNDEFINED;
         CLOCK_APBB clock_apbb = CLOCK_APBB::UNDEFINED;
