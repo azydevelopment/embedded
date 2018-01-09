@@ -28,8 +28,7 @@
 
 CClockAtmelSAMD21::CClockAtmelSAMD21(const DESC& desc)
     : CClock(desc)
-    , m_bus(desc.bus)
-    , m_pm_index(desc.pm_index)
+    , m_desc(desc)
     , m_config({}) {
 }
 
@@ -40,44 +39,39 @@ CClockAtmelSAMD21::~CClockAtmelSAMD21() {
 
 // static functions
 
-void CClockAtmelSAMD21::SetPmMask(const BUS bus, const uint32_t pmIndex, const bool enabled) {
-    uint32_t mask = 1 << pmIndex;
+void CClockAtmelSAMD21::EnableClock(const CLOCK_AHB clockIndex, const bool enabled) {
+    uint32_t mask = 1 << static_cast<uint8_t>(clockIndex);
     if (enabled) {
-        switch (bus) {
-        case BUS::AHB:
-            PM->AHBMASK.reg |= mask;
-            break;
-        case BUS::APBA:
-            PM->APBAMASK.reg |= mask;
-            break;
-        case BUS::APBB:
-            PM->APBBMASK.reg |= mask;
-            break;
-        case BUS::APBC:
-            PM->APBCMASK.reg |= mask;
-            break;
-        default:
-            // TODO ERROR_HANDLING
-            break;
-        }
+        PM->AHBMASK.reg |= mask;
     } else {
-        switch (bus) {
-        case BUS::AHB:
-            PM->AHBMASK.reg &= ~mask;
-            break;
-        case BUS::APBA:
-            PM->APBAMASK.reg &= ~mask;
-            break;
-        case BUS::APBB:
-            PM->APBBMASK.reg &= ~mask;
-            break;
-        case BUS::APBC:
-            PM->APBCMASK.reg &= ~mask;
-            break;
-        default:
-            // TODO ERROR_HANDLING
-            break;
-        }
+        PM->AHBMASK.reg &= ~mask;
+    }
+}
+
+void CClockAtmelSAMD21::EnableClock(const CLOCK_APBA clockIndex, const bool enabled) {
+    uint32_t mask = 1 << static_cast<uint8_t>(clockIndex);
+    if (enabled) {
+        PM->APBAMASK.reg |= mask;
+    } else {
+        PM->APBAMASK.reg &= ~mask;
+    }
+}
+
+void CClockAtmelSAMD21::EnableClock(const CLOCK_APBB clockIndex, const bool enabled) {
+    uint32_t mask = 1 << static_cast<uint8_t>(clockIndex);
+    if (enabled) {
+        PM->APBBMASK.reg |= mask;
+    } else {
+        PM->APBBMASK.reg &= ~mask;
+    }
+}
+
+void CClockAtmelSAMD21::EnableClock(const CLOCK_APBC clockIndex, const bool enabled) {
+    uint32_t mask = 1 << static_cast<uint8_t>(clockIndex);
+    if (enabled) {
+        PM->APBCMASK.reg |= mask;
+    } else {
+        PM->APBCMASK.reg &= ~mask;
     }
 }
 
@@ -88,24 +82,48 @@ void CClockAtmelSAMD21::SetConfig_impl(const CClock::CONFIG_DESC& config) {
 }
 
 void CClockAtmelSAMD21::SetEnabled_impl(const bool enabled) {
+    // enable/disable PM clocks
+    {
+        if (m_desc.clock_ahb != CLOCK_AHB::UNDEFINED) {
+            EnableClock(m_desc.clock_ahb, enabled);
+        }
+
+        if (m_desc.clock_apba != CLOCK_APBA::UNDEFINED) {
+            EnableClock(m_desc.clock_apba, enabled);
+        }
+
+        if (m_desc.clock_apbb != CLOCK_APBB::UNDEFINED) {
+            EnableClock(m_desc.clock_apbb, enabled);
+        }
+
+        if (m_desc.clock_apbc != CLOCK_APBC::UNDEFINED) {
+            EnableClock(m_desc.clock_apbc, enabled);
+        }
+    }
+
     if (enabled) {
-        // enable PM
-        SetPmMask(m_bus, m_pm_index, true);
+        // prepare a new gclk clkctrl register
+        uint32_t clkctrl = 0;
+        {
+            // target this clock ID
+            clkctrl |= GetId();
 
-        struct system_gclk_chan_config gclk_chan_conf;
+            // set the generator
+            clkctrl |= static_cast<uint8_t>(m_config.generator) << 8;
+        }
 
-        // TODO HACK: static cast to ASF type
-        gclk_chan_conf.source_generator =
-            static_cast<gclk_generator>(m_config.clock_source_generator);
-        system_gclk_chan_set_config(GetId(), &gclk_chan_conf);
+        // disable this gclk for now
+        system_gclk_chan_disable(GetId());
+
+        // write the new clkctrl register config
+        GCLK->CLKCTRL.reg = clkctrl;
+
+        // reenable the gclk
         system_gclk_chan_enable(GetId());
 
         // TODO IMPLEMENT: Need this sometimes when enabling SERCOM clocks?
         // sercom_set_gclk_generator(gclk_chan_conf.source_generator, false);
     } else {
-        // disable PM
-        SetPmMask(m_bus, m_pm_index, false);
-
         system_gclk_chan_disable(GetId());
     }
 }

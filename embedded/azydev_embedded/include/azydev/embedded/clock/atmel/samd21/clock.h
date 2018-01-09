@@ -26,28 +26,140 @@
 
 #include <stdint.h>
 
+#include <asf.h>
+
 class CClockAtmelSAMD21 final : public CClock
 {
 public:
-    enum class BUS : uint8_t
+    enum class CLOCK_GCLK : uint8_t
     {
-        UNDEFINED,
-        AHB,
-        APBA,
-        APBB,
-        APBC
+        CLOCK_DFLL48M_REF,
+        CLOCK_DPLL,
+        CLOCK_DPLL_32K,
+        CLOCK_WDT,
+        CLOCK_TRC,
+        CLOCK_EIC,
+        CLOCK_USB,
+        CLOCK_EVSYS_CHANNEL_0,
+        CLOCK_EVSYS_CHANNEL_1,
+        CLOCK_EVSYS_CHANNEL_2,
+        CLOCK_EVSYS_CHANNEL_3,
+        CLOCK_EVSYS_CHANNEL_4,
+        CLOCK_EVSYS_CHANNEL_5,
+        CLOCK_EVSYS_CHANNEL_6,
+        CLOCK_EVSYS_CHANNEL_7,
+        CLOCK_EVSYS_CHANNEL_8,
+        CLOCK_EVSYS_CHANNEL_9,
+        CLOCK_EVSYS_CHANNEL_10,
+        CLOCK_EVSYS_CHANNEL_11,
+        CLOCK_SERCOMX_SLOW,
+        CLOCK_SERCOM0_CORE,
+        CLOCK_SERCOM1_CORE,
+        CLOCK_SERCOM2_CORE,
+        CLOCK_SERCOM3_CORE,
+        CLOCK_SERCOM4_CORE,
+        CLOCK_SERCOM5_CORE,
+        CLOCK_TCC0_TCC1,
+        CLOCK_TC2_TC3,
+        CLOCK_TC4_TC5,
+        CLOCK_TC6_TC7,
+        CLOCK_ADC,
+        CLOCK_AC_DIG,
+        CLOCK_AC_ANA = 0x21,
+        CLOCK_DAC    = 0x23,
+        CLOCK_PTC,
+        CLOCK_I2S_0,
+        CLOCK_I2S_1,
+        CLOCK_UNDEFINED = 0xFF
+    };
+
+    enum class CLOCK_AHB : uint8_t
+    {
+        CLOCK_HPB0,
+        CLOCK_HPB1,
+        CLOCK_HPB2,
+        CLOCK_DSU,
+        CLOCK_NVMCTRL,
+        CLOCK_DMAC,
+        CLOCK_USB,
+        UNDEFINED = 0xFF
+    };
+
+    enum class CLOCK_APBA : uint8_t
+    {
+        CLOCK_PAC0,
+        CLOCK_PM,
+        CLOCK_SYSCTRL,
+        CLOCK_GCLK,
+        CLOCK_WDT,
+        CLOCK_RTC,
+        CLOCK_EIC,
+        UNDEFINED = 0xFF
+    };
+
+    enum class CLOCK_APBB : uint8_t
+    {
+        CLOCK_PAC1,
+        CLOCK_DSU,
+        CLOCK_NVMCTRL,
+        CLOCK_PORT,
+        CLOCK_DMAC,
+        CLOCK_USB,
+        UNDEFINED = 0xFF
+    };
+
+    enum class CLOCK_APBC : uint8_t
+    {
+        CLOCK_PAC0,
+        CLOCK_EVSYS,
+        CLOCK_SERCOM0,
+        CLOCK_SERCOM1,
+        CLOCK_SERCOM2,
+        CLOCK_SERCOM3,
+        CLOCK_SERCOM4,
+        CLOCK_SERCOM5,
+        CLOCK_TCC0,
+        CLOCK_TCC1,
+        CLOCK_TCC2,
+        CLOCK_TC3,
+        CLOCK_TC4,
+        CLOCK_TC5,
+        CLOCK_TC6,
+        CLOCK_TC7,
+        CLOCK_ADC,
+        CLOCK_AC,
+        CLOCK_DAC,
+        CLOCK_PTC,
+        CLOCK_I2S,
+        UNDEFINED = 255
+    };
+
+    enum class CLOCK_GENERATOR : uint8_t
+    {
+        GCLKGEN0,
+        GCLKGEN1,
+        GCLKGEN2,
+        GCLKGEN3,
+        GCLKGEN4,
+        GCLKGEN5,
+        GCLKGEN6,
+        GCLKGEN7,
+        GCLKGEN8,
+        UNDEFINED = 255
     };
 
     struct DESC : CClock::DESC
     {
         // TODO HACK: Move PM index elsewhere?
-        BUS bus           = BUS::UNDEFINED;
-        uint32_t pm_index = 0;
+        CLOCK_AHB clock_ahb   = CLOCK_AHB::UNDEFINED;
+        CLOCK_APBA clock_apba = CLOCK_APBA::UNDEFINED;
+        CLOCK_APBB clock_apbb = CLOCK_APBB::UNDEFINED;
+        CLOCK_APBC clock_apbc = CLOCK_APBC::UNDEFINED;
     };
 
     // TODO IMPLEMENT: Clock division control
     struct CONFIG_DESC : CClock::CONFIG_DESC
-    { uint8_t clock_source_generator = 0; };
+    { CLOCK_GENERATOR generator = CLOCK_GENERATOR::UNDEFINED; };
 
     // constructor
     CClockAtmelSAMD21(const DESC&);
@@ -61,12 +173,14 @@ private:
     CClockAtmelSAMD21& operator=(const CClockAtmelSAMD21&);
 
     // member variables
-    BUS m_bus;
-    uint32_t m_pm_index;
+    const DESC m_desc;
     CONFIG_DESC m_config;
 
     // static functions
-    static void SetPmMask(const BUS, const uint32_t pmIndex, const bool enabled);
+    static void EnableClock(const CLOCK_AHB, const bool enabled);
+    static void EnableClock(const CLOCK_APBA, const bool enabled);
+    static void EnableClock(const CLOCK_APBB, const bool enabled);
+    static void EnableClock(const CLOCK_APBC, const bool enabled);
 
     // CClock
     virtual void SetConfig_impl(const CClock::CONFIG_DESC&) override final;
