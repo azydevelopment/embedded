@@ -134,17 +134,17 @@ public:
         UNDEFINED = 255
     };
 
-    enum class CLOCK_GENERATOR : uint8_t
+    enum class GCLK_GENERATOR : uint8_t
     {
-        GCLKGEN0,
-        GCLKGEN1,
-        GCLKGEN2,
-        GCLKGEN3,
-        GCLKGEN4,
-        GCLKGEN5,
-        GCLKGEN6,
-        GCLKGEN7,
-        GCLKGEN8,
+        GEN0,
+        GEN1,
+        GEN2,
+        GEN3,
+        GEN4,
+        GEN5,
+        GEN6,
+        GEN7,
+        GEN8,
         UNDEFINED = 255
     };
 
@@ -160,7 +160,7 @@ public:
 
     // TODO IMPLEMENT: Clock division control
     struct CONFIG_DESC : CClock::CONFIG_DESC
-    { CLOCK_GENERATOR generator = CLOCK_GENERATOR::UNDEFINED; };
+    { GCLK_GENERATOR gclk_generator = GCLK_GENERATOR::UNDEFINED; };
 
     // constructor
     CClockAtmelSAMD21(const DESC&);

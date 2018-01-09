@@ -112,7 +112,7 @@ void CClockAtmelSAMD21::SetEnabled_impl(const bool enabled) {
                 clkctrl |= gclk;
 
                 // set the generator
-                clkctrl |= static_cast<uint8_t>(m_config.generator) << 8;
+                clkctrl |= static_cast<uint8_t>(m_config.gclk_generator) << 8;
             }
 
             // disable this gclk for now
