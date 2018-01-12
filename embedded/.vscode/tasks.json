@@ -15,13 +15,14 @@
             },
             "presentation": {
                 "reveal": "always"
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "build_as7_release",
             "command": "powershell",
             "args": [
-                "${env:UTIL}/util_build_embedded_as7.ps1release"
+                "${env:UTIL}/util_build_embedded_as7.ps1 release"
             ],
             "group": "build",
             "presentation": {
@@ -42,7 +43,6 @@
             "presentation": {
                 "reveal": "always"
             },
-            // Use the standard MS compiler pattern to detect errors, warnings and infos
             "problemMatcher": "$msCompile"
         },
         {
@@ -59,7 +59,6 @@
             "presentation": {
                 "reveal": "always"
             },
-            // Use the standard MS compiler pattern to detect errors, warnings and infos
             "problemMatcher": "$msCompile"
         },
         {
@@ -73,7 +72,6 @@
             "presentation": {
                 "reveal": "always"
             },
-            // Use the standard MS compiler pattern to detect errors, warnings and infos
             "problemMatcher": "$msCompile"
         }
     ]
