@@ -44,6 +44,8 @@ public:
 
     // NVI
     // TODO IMPLEMENT: Replace all these parameters with proper enums or normalized scales
+	void Start();
+	void Stop();
     void SetEnabled(bool enabled);
     void SetDecodeMode(uint8_t decodeMode);
     void SetIntensity(uint8_t intensity);
