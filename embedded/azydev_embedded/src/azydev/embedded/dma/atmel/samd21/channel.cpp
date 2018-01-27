@@ -37,6 +37,17 @@ CDMAChannelAtmelSAMD21::CDMAChannelAtmelSAMD21(const DESC& desc)
 CDMAChannelAtmelSAMD21::~CDMAChannelAtmelSAMD21() {
 }
 
+// ISR
+
+void CDMAChannelAtmelSAMD21::_ISR() {
+	system_interrupt_enter_critical_section();
+	{
+		// clean up
+		MarkTransferComplete();
+	}
+	system_interrupt_leave_critical_section();
+}
+
 /* PRIVATE */
 
 // member variables
@@ -53,13 +64,12 @@ void CDMAChannelAtmelSAMD21::SetConfig_impl(const CDMAChannel::CONFIG_DESC& conf
     m_config = static_cast<const CDMAChannelAtmelSAMD21::CONFIG_DESC&>(config);
 }
 
-void CDMAChannelAtmelSAMD21::StartTransfer_impl(const CDMAChannel::TRANSFER_DESC& transfer) {
+void CDMAChannelAtmelSAMD21::StartTransfer_impl(const IDMAEntity::TRANSFER_DESC& transfer) {
     const CDMAChannelAtmelSAMD21::TRANSFER_DESC& transferSAMD21 =
         static_cast<const CDMAChannelAtmelSAMD21::TRANSFER_DESC&>(transfer);
 
     // TODO IMPLEMENT: transferSAMD21.callback_on_complete
 
-    // enter critsec
     system_interrupt_enter_critical_section();
     {
         // select the channel we'll be using
@@ -115,20 +125,30 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(const CDMAChannel::TRANSFER_DESC
 
         // enable/disable interrupts
         {
+            // always enable the transfer complete interrupt flags
+            SetEnableInterrupt(INTERRUPT::ON_TRANSFER_COMPLETE, true);
+
+            // optionally enable the transfer error and suspend interrupt flags
             SetEnableInterrupt(
                 INTERRUPT::ON_TRANSFER_ERROR, transferSAMD21.enable_interrupt_transfer_error);
-            SetEnableInterrupt(
-                INTERRUPT::ON_TRANSFER_COMPLETE, transferSAMD21.enable_interrupt_transfer_complete);
             SetEnableInterrupt(
                 INTERRUPT::ON_SUSPEND, transferSAMD21.enable_interrupt_channel_suspend);
         }
 
-        // enable the DMA interrupt
-        // NVIC->ISER[0] = 1 << 6;
-
         // finally, enable the transfer channel
         DMAC->CHCTRLA.reg |= 1 << static_cast<uint8_t>(REG_CHCTRLA::OFFSET_ENABLE);
     }
-    // enter critsec
     system_interrupt_leave_critical_section();
+}
+
+void CDMAChannelAtmelSAMD21::MarkTransferComplete_impl() volatile {
+	system_interrupt_enter_critical_section();
+	{
+		// select our channel
+		DMAC->CHID.reg = GetId();
+		
+		// clear the transfer complete interrupt flag
+		DMAC->CHINTFLAG.reg |= 1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_COMPLETE);
+	}
+	system_interrupt_leave_critical_section();
 }

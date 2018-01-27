@@ -205,8 +205,8 @@ public:
         uint32_t source_address                       = 0;
         uint32_t destination_address                  = 0;
 
+		// interrupts
         bool enable_interrupt_transfer_error    = false;
-        bool enable_interrupt_transfer_complete = false;
         bool enable_interrupt_channel_suspend   = false;
     };
 
@@ -221,6 +221,9 @@ public:
 
     // destructor
     virtual ~CDMAChannelAtmelSAMD21() override final;
+
+	// ISR
+	void _ISR();
 
 private:
     enum class REG_CHCTRLA : uint8_t
@@ -260,5 +263,6 @@ private:
 
     // CDMAChannel
     virtual void SetConfig_impl(const CDMAChannel::CONFIG_DESC&) override final;
-    virtual void StartTransfer_impl(const CDMAChannel::TRANSFER_DESC&) override final;
+    virtual void StartTransfer_impl(const IDMAEntity::TRANSFER_DESC&) override final;
+	virtual void MarkTransferComplete_impl() volatile override final;
 };

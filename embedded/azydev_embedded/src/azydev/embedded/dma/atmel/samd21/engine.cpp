@@ -27,9 +27,14 @@
 /* FILE SCOPED STATICS */
 
 // TODO HACK: Hardcoded number of channels
+
 const uint8_t NUM_CHANNELS = 1;
 static CDMAChannelAtmelSAMD21::DESCRIPTOR fs_descriptors[NUM_CHANNELS];
 static CDMAChannelAtmelSAMD21::DESCRIPTOR fs_descriptors_writeback[NUM_CHANNELS];
+
+/* STATICS */
+
+CDMAEngineAtmelSAMD21* CDMAEngineAtmelSAMD21::s_dma_engine = nullptr;
 
 /* PUBLIC */
 
@@ -50,6 +55,9 @@ CDMAEngineAtmelSAMD21::CDMAEngineAtmelSAMD21(const DESC& desc)
         channelDesc.descriptor                   = &fs_descriptors[i];
         m_channels[i]                            = new CDMAChannelAtmelSAMD21(channelDesc);
     }
+	
+	// TODO HACK: Only one engine can ever exist
+	s_dma_engine = this;
 }
 
 // destructor
@@ -65,12 +73,37 @@ CDMAEngineAtmelSAMD21::~CDMAEngineAtmelSAMD21() {
     delete[] m_channels;
 }
 
+// ISR
+
+// TODO HACK: Remove ASF ISR usage
+void DMAC_Handler() {
+	CDMAEngineAtmelSAMD21::s_dma_engine->_ISR();
+}
+
+void CDMAEngineAtmelSAMD21::_ISR() {
+	system_interrupt_enter_critical_section();
+	{
+		// TODO HACK: Hardcoded mask
+		uint8_t pendingChannelId = DMAC->INTPEND.reg & 0xF;
+		
+		CDMAChannelAtmelSAMD21& channel = GetChannel(pendingChannelId);
+		
+		// execute ISR for this particular channel
+		channel._ISR();
+	}
+	system_interrupt_leave_critical_section();
+}
+
 /* PRIVATE */
 
 // member functions
 
 uint8_t CDMAEngineAtmelSAMD21::GetNumChannels() const {
     return m_num_channels;
+}
+
+CDMAChannelAtmelSAMD21& CDMAEngineAtmelSAMD21::GetChannel(const uint8_t channelId) const {
+	return *static_cast<CDMAChannelAtmelSAMD21*>(m_channels[channelId]);
 }
 
 void CDMAEngineAtmelSAMD21::SetEnablePriority(
@@ -112,6 +145,9 @@ void CDMAEngineAtmelSAMD21::SetEnabled_impl(const bool enabled) {
 
     // TODO IMPLEMENT: CRC
 
+	// enable the DMA interrupt
+	NVIC->ISER[0] = 1 << 6;
+
     // exit critsec
     system_interrupt_leave_critical_section();
 }
@@ -121,8 +157,9 @@ CDMAChannel* CDMAEngineAtmelSAMD21::AcquireFreeChannel_impl() {
 
     // find a free channel if there is one
     for (uint8_t i = 0; i < GetNumChannels(); i++) {
-        if (!(m_channels[i]->IsBusy())) {
-            channel = m_channels[i];
+		CDMAChannel& channelTemp = GetChannel(i);
+        if (!channelTemp.IsBusy()) {
+            channel = &channelTemp;
             break;
         }
     }

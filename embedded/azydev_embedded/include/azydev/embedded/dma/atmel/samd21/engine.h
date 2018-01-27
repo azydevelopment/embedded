@@ -43,6 +43,11 @@ public:
     // destructor
     virtual ~CDMAEngineAtmelSAMD21() override final;
 
+	// ISR
+	// TODO HACK: Effectively a static global (ie. can only have one CDMAEngineAtmelSAMD21 at one time properly
+	static CDMAEngineAtmelSAMD21* s_dma_engine;
+	void _ISR();
+
 private:
     enum class REG_CTRL : uint8_t
     {
@@ -63,6 +68,7 @@ private:
 
     // member functions
     uint8_t GetNumChannels() const;
+	CDMAChannelAtmelSAMD21& GetChannel(const uint8_t channelId) const;
     void SetEnablePriority(const CDMAChannelAtmelSAMD21::PRIORITY, const bool enabled);
 
     // CDMAEngine
@@ -70,3 +76,4 @@ private:
     virtual void SetEnabled_impl(const bool) override final;
     virtual CDMAChannel* AcquireFreeChannel_impl() override final;
 };
+

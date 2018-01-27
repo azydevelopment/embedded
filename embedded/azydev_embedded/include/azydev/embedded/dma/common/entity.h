@@ -20,46 +20,37 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE. */
 
-#include <azydev/embedded/dma/common/engine.h>
+#pragma once
 
-#include <azydev/embedded/dma/common/channel.h>
+#include <stdint.h>
 
-/* PUBLIC */
+class IDMAEntity
+{
+public:
+	typedef void (*OnTransferComplete)(const uint8_t transferId);
 
-// destructor
+	enum class RESULT : uint8_t
+	{
+		SUCCESS   = 0,
+		FAIL_BUSY = 1,
+		UNDEFINED = 255
+	};
 
-CDMAEngine::~CDMAEngine() {
-}
+	struct TRANSFER_DESC
+	{
+		uint8_t transfer_id = 0;
+		OnTransferComplete callback_transfer_complete = nullptr;
+	};
 
-// NVI
+	// destructor
+	virtual ~IDMAEntity() {};
 
-void CDMAEngine::SetConfig(const CONFIG_DESC& config) {
-    SetConfig_impl(config);
-}
+protected:
+	// constructor
+	IDMAEntity() {};
 
-void CDMAEngine::SetEnabled(const bool enabled) {
-    SetEnabled_impl(enabled);
-}
-
-CDMAEngine::RESULT CDMAEngine::StartTransfer(const TRANSFER_DESC& transfer) {
-    RESULT result = RESULT::UNDEFINED;
-
-    CDMAChannel* channel = AcquireFreeChannel_impl();
-
-    if (channel != nullptr) {
-        channel->StartTransfer(transfer);
-        result = RESULT::SUCCESS;
-    } else {
-        result = RESULT::FAIL_BUSY;
-    }
-
-    return result;
-}
-
-/* PROTECTED */
-
-// constructor
-
-CDMAEngine::CDMAEngine(const DESC&)
-    : IDMAEntity() {
-}
+private:
+	// rule of three
+	IDMAEntity(const IDMAEntity&);
+	IDMAEntity& operator=(const IDMAEntity&);
+};

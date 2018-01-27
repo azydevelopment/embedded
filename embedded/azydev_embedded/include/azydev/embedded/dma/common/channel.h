@@ -22,19 +22,13 @@
 
 #pragma once
 
+#include <azydev/embedded/dma/common/entity.h>
+
 #include <stdint.h>
 
-class CDMAChannel
+class CDMAChannel : public IDMAEntity
 {
 public:
-    typedef void (*OnTransferComplete)(const uint8_t transferId);
-
-    struct TRANSFER_DESC
-    {
-        uint8_t transfer_id                     = 0;
-        OnTransferComplete callback_on_complete = nullptr;
-    };
-
     struct CONFIG_DESC
     {};
 
@@ -42,10 +36,10 @@ public:
     { uint8_t id = 255; };
 
     // destructor
-    virtual ~CDMAChannel();
+    virtual ~CDMAChannel() override;
 
     // NVI
-    virtual uint8_t GetId() const final;
+    virtual uint8_t GetId() volatile const final;
     virtual void SetConfig(const CONFIG_DESC&) final;
     virtual void StartTransfer(const TRANSFER_DESC&) final;
     virtual bool IsBusy() volatile const final;
@@ -53,6 +47,9 @@ public:
 protected:
     // constructor
     CDMAChannel(const DESC&);
+	
+	// NVI
+	virtual void MarkTransferComplete() volatile final;
 
 private:
     // rule of three
@@ -62,8 +59,11 @@ private:
     // member variables
     uint8_t const m_id;
     volatile bool m_busy;
+    volatile uint8_t m_transfer_id_current;
+    volatile OnTransferComplete m_callback_transfer_complete;
 
     // abstract
     virtual void SetConfig_impl(const CONFIG_DESC&)       = 0;
     virtual void StartTransfer_impl(const TRANSFER_DESC&) = 0;
+	virtual void MarkTransferComplete_impl() volatile = 0;
 };

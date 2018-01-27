@@ -31,7 +31,7 @@ CDMAChannel::~CDMAChannel() {
 
 // NVI
 
-uint8_t CDMAChannel::GetId() const {
+uint8_t CDMAChannel::GetId() volatile const {
     return m_id;
 }
 
@@ -41,6 +41,8 @@ void CDMAChannel::SetConfig(const CONFIG_DESC& config) {
 
 void CDMAChannel::StartTransfer(const TRANSFER_DESC& transfer) {
     m_busy = true;
+	m_transfer_id_current = transfer.transfer_id;
+	m_callback_transfer_complete = transfer.callback_transfer_complete;
     StartTransfer_impl(transfer);
 }
 
@@ -50,7 +52,22 @@ bool CDMAChannel::IsBusy() volatile const {
 
 /* PROTECTED */
 
+// constructor
+
 CDMAChannel::CDMAChannel(const DESC& desc)
-    : m_id(desc.id)
-    , m_busy(false) {
+    : IDMAEntity()
+    , m_id(desc.id)
+    , m_busy(false)
+    , m_transfer_id_current(255)
+    , m_callback_transfer_complete(nullptr) {
+}
+
+// member functions
+
+void CDMAChannel::MarkTransferComplete() volatile {
+	MarkTransferComplete_impl();
+	if(m_callback_transfer_complete != nullptr) {
+		m_callback_transfer_complete(m_transfer_id_current);
+	}
+	m_busy = false;
 }

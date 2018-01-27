@@ -22,20 +22,15 @@
 
 #pragma once
 
+#include <azydev/embedded/dma/common/entity.h>
+
 #include <stdint.h>
 
-#include <azydev/embedded/dma/common/channel.h>
+class CDMAChannel;
 
-class CDMAEngine
+class CDMAEngine : public IDMAEntity
 {
 public:
-    enum class RESULT : uint8_t
-    {
-        SUCCESS   = 0,
-        FAIL_BUSY = 1,
-        UNDEFINED = 255
-    };
-
     struct CONFIG_DESC
     {};
 
@@ -43,12 +38,12 @@ public:
     {};
 
     // destructor
-    virtual ~CDMAEngine();
+    virtual ~CDMAEngine() override;
 
     // NVI
     virtual void SetConfig(const CONFIG_DESC&) final;
     virtual void SetEnabled(const bool) final;
-    virtual RESULT StartTransfer(const CDMAChannel::TRANSFER_DESC&) final;
+    virtual RESULT StartTransfer(const TRANSFER_DESC&) final;
 
 protected:
     // constructor
