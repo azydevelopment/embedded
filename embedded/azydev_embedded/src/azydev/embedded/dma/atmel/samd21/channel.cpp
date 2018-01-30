@@ -29,7 +29,9 @@
 CDMAChannelAtmelSAMD21::CDMAChannelAtmelSAMD21(const DESC& desc)
     : CDMAChannel(desc)
     , m_descriptor(desc.descriptor)
-    , m_config({}) {
+    , m_config({})
+	, m_trigger_action(TRIGGER_ACTION::UNDEFINED)
+	, m_num_beats_remaining(0) {
 }
 
 // destructor
@@ -48,6 +50,48 @@ void CDMAChannelAtmelSAMD21::_ISR() {
 	system_interrupt_leave_critical_section();
 }
 
+// IDMAEntity::ITransferControl
+
+bool CDMAChannelAtmelSAMD21::IsTransferInProgress() const {
+	return CDMAChannel::IsTransferInProgress();
+}
+
+bool CDMAChannelAtmelSAMD21::IsPendingTrigger() const {
+	bool pendingTrigger = false;
+	
+	if(IsTransferInProgress() && m_num_beats_remaining != 0){
+		switch(m_trigger_action) {
+			case TRIGGER_ACTION::START_BEAT:
+				pendingTrigger = (DMAC->PENDCH.reg & (1 << GetId())) == 0;
+			break;
+			case TRIGGER_ACTION::START_BLOCK:
+			case TRIGGER_ACTION::START_TRANSACTION:
+				pendingTrigger = true;
+			break;
+			default:
+			break;
+		}
+	}
+	
+	return pendingTrigger;
+}
+
+void CDMAChannelAtmelSAMD21::TriggerTransferStep() {
+	switch(m_trigger_action) {
+		case TRIGGER_ACTION::START_BEAT:
+			DMAC->SWTRIGCTRL.reg |= 1 << GetId();
+			m_num_beats_remaining--;
+		break;
+		case TRIGGER_ACTION::START_BLOCK:
+		case TRIGGER_ACTION::START_TRANSACTION:
+			DMAC->SWTRIGCTRL.reg |= 1 << GetId();
+			m_num_beats_remaining = 0; // all beats will be triggered by this
+		break;
+		default:
+		break;
+	}
+}
+
 /* PRIVATE */
 
 // member variables
@@ -64,7 +108,7 @@ void CDMAChannelAtmelSAMD21::SetConfig_impl(const CDMAChannel::CONFIG_DESC& conf
     m_config = static_cast<const CDMAChannelAtmelSAMD21::CONFIG_DESC&>(config);
 }
 
-void CDMAChannelAtmelSAMD21::StartTransfer_impl(const IDMAEntity::TRANSFER_DESC& transfer) {
+void CDMAChannelAtmelSAMD21::AddTransfer_impl(const IDMAEntity::TRANSFER_DESC& transfer, IDMAEntity::ITransferControl** transferControl) {
     const CDMAChannelAtmelSAMD21::TRANSFER_DESC& transferSAMD21 =
         static_cast<const CDMAChannelAtmelSAMD21::TRANSFER_DESC&>(transfer);
 
@@ -82,6 +126,10 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(const IDMAEntity::TRANSFER_DESC&
 
         // clear the software trigger
         DMAC->SWTRIGCTRL.reg &= ~(1 << channelId);
+
+		// store the trigger action and num beats to determine when the channel is pending
+		m_trigger_action = transferSAMD21.trigger_action;
+		m_num_beats_remaining = transferSAMD21.num_beats;
 
         // write the channel config for this transfer
         {
@@ -117,10 +165,12 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(const IDMAEntity::TRANSFER_DESC&
             m_descriptor->btctrl.bits.stepsel =
                 static_cast<uint8_t>(transferSAMD21.step_size_select);
             m_descriptor->btctrl.bits.stepsize    = static_cast<uint8_t>(transferSAMD21.step_size);
-            m_descriptor->num_beats_per_block     = transferSAMD21.num_beats_per_block;
+            m_descriptor->num_beats     = transferSAMD21.num_beats;
             m_descriptor->source_address          = transferSAMD21.source_address;
             m_descriptor->destination_address     = transferSAMD21.destination_address;
             m_descriptor->next_descriptor_address = 0;
+			
+			// TODO IMPLEMENT: Linked descriptors
         }
 
         // enable/disable interrupts
@@ -135,13 +185,18 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(const IDMAEntity::TRANSFER_DESC&
                 INTERRUPT::ON_SUSPEND, transferSAMD21.enable_interrupt_channel_suspend);
         }
 
-        // finally, enable the transfer channel
+        // enable the transfer channel
         DMAC->CHCTRLA.reg |= 1 << static_cast<uint8_t>(REG_CHCTRLA::OFFSET_ENABLE);
+		
+		// return a transfer control object if requested
+		if(transferControl != nullptr) {
+			*transferControl = this;
+		}
     }
     system_interrupt_leave_critical_section();
 }
 
-void CDMAChannelAtmelSAMD21::MarkTransferComplete_impl() volatile {
+void CDMAChannelAtmelSAMD21::MarkTransferComplete_impl() {
 	system_interrupt_enter_critical_section();
 	{
 		// select our channel

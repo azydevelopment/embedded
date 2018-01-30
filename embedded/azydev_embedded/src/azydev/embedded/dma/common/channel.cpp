@@ -39,15 +39,15 @@ void CDMAChannel::SetConfig(const CONFIG_DESC& config) {
     SetConfig_impl(config);
 }
 
-void CDMAChannel::StartTransfer(const TRANSFER_DESC& transfer) {
-    m_busy = true;
+void CDMAChannel::AddTransfer(const TRANSFER_DESC& transfer, ITransferControl** transferControl) {
+    m_transfer_in_progress = true;
 	m_transfer_id_current = transfer.transfer_id;
 	m_callback_transfer_complete = transfer.callback_transfer_complete;
-    StartTransfer_impl(transfer);
+    AddTransfer_impl(transfer, transferControl);
 }
 
-bool CDMAChannel::IsBusy() volatile const {
-    return m_busy;
+bool CDMAChannel::IsTransferInProgress() volatile const {
+    return m_transfer_in_progress;
 }
 
 /* PROTECTED */
@@ -57,17 +57,17 @@ bool CDMAChannel::IsBusy() volatile const {
 CDMAChannel::CDMAChannel(const DESC& desc)
     : IDMAEntity()
     , m_id(desc.id)
-    , m_busy(false)
+    , m_transfer_in_progress(false)
     , m_transfer_id_current(255)
     , m_callback_transfer_complete(nullptr) {
 }
 
 // member functions
 
-void CDMAChannel::MarkTransferComplete() volatile {
+void CDMAChannel::MarkTransferComplete() {
 	MarkTransferComplete_impl();
 	if(m_callback_transfer_complete != nullptr) {
 		m_callback_transfer_complete(m_transfer_id_current);
 	}
-	m_busy = false;
+	m_transfer_in_progress = false;
 }

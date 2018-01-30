@@ -41,13 +41,13 @@ void CDMAEngine::SetEnabled(const bool enabled) {
     SetEnabled_impl(enabled);
 }
 
-CDMAEngine::RESULT CDMAEngine::StartTransfer(const TRANSFER_DESC& transfer) {
+CDMAEngine::RESULT CDMAEngine::AddTransfer(const TRANSFER_DESC& transfer, ITransferControl** transferControl) {
     RESULT result = RESULT::UNDEFINED;
 
     CDMAChannel* channel = AcquireFreeChannel_impl();
 
     if (channel != nullptr) {
-        channel->StartTransfer(transfer);
+        channel->AddTransfer(transfer, transferControl);
         result = RESULT::SUCCESS;
     } else {
         result = RESULT::FAIL_BUSY;

@@ -158,7 +158,7 @@ CDMAChannel* CDMAEngineAtmelSAMD21::AcquireFreeChannel_impl() {
     // find a free channel if there is one
     for (uint8_t i = 0; i < GetNumChannels(); i++) {
 		CDMAChannel& channelTemp = GetChannel(i);
-        if (!channelTemp.IsBusy()) {
+        if (!channelTemp.IsTransferInProgress()) {
             channel = &channelTemp;
             break;
         }

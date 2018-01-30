@@ -27,6 +27,13 @@
 class IDMAEntity
 {
 public:
+	class ITransferControl {
+		public:
+			virtual bool IsTransferInProgress() const = 0;
+			virtual bool IsPendingTrigger() const = 0;
+			virtual void TriggerTransferStep() = 0;
+	};
+
 	typedef void (*OnTransferComplete)(const uint8_t transferId);
 
 	enum class RESULT : uint8_t

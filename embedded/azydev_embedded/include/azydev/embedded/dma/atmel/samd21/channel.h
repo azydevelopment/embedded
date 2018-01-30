@@ -28,7 +28,9 @@
 
 #include <asf.h>
 
-class CDMAChannelAtmelSAMD21 final : public CDMAChannel
+class CDMAChannelAtmelSAMD21 final
+	: public CDMAChannel
+	, public IDMAEntity::ITransferControl
 {
 public:
     enum class TRIGGER : uint8_t
@@ -175,7 +177,7 @@ public:
         };
 
         BLOCK_TRANSFER_CONTROL_CONFIG btctrl = {};
-        uint16_t num_beats_per_block         = 0;
+        uint16_t num_beats         = 0;
         uint32_t source_address              = 0;
         uint32_t destination_address         = 0;
         uint32_t next_descriptor_address     = 0;
@@ -201,7 +203,7 @@ public:
         bool enable_destination_address_increment     = false;
         DESCRIPTOR::STEP_SIZE_SELECT step_size_select = DESCRIPTOR::STEP_SIZE_SELECT::DESTINATION;
         DESCRIPTOR::STEP_SIZE step_size               = DESCRIPTOR::STEP_SIZE::X1;
-        uint16_t num_beats_per_block                  = 0;
+        uint16_t num_beats                            = 0;
         uint32_t source_address                       = 0;
         uint32_t destination_address                  = 0;
 
@@ -224,6 +226,11 @@ public:
 
 	// ISR
 	void _ISR();
+
+	// IDMAEntity::ITransferControl
+	virtual bool IsTransferInProgress() const override final;
+	virtual bool IsPendingTrigger() const override final;
+	virtual void TriggerTransferStep() override final;
 
 private:
     enum class REG_CHCTRLA : uint8_t
@@ -257,12 +264,14 @@ private:
     // member variables
     DESCRIPTOR* const m_descriptor;
     CONFIG_DESC m_config;
+	TRIGGER_ACTION m_trigger_action;
+	uint16_t m_num_beats_remaining;
 
     // member functions
     void SetEnableInterrupt(const INTERRUPT, const bool enabled);
 
     // CDMAChannel
     virtual void SetConfig_impl(const CDMAChannel::CONFIG_DESC&) override final;
-    virtual void StartTransfer_impl(const IDMAEntity::TRANSFER_DESC&) override final;
-	virtual void MarkTransferComplete_impl() volatile override final;
+    virtual void AddTransfer_impl(const IDMAEntity::TRANSFER_DESC&, IDMAEntity::ITransferControl**) override final;
+	virtual void MarkTransferComplete_impl() override final;
 };

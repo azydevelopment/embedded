@@ -41,15 +41,15 @@ public:
     // NVI
     virtual uint8_t GetId() volatile const final;
     virtual void SetConfig(const CONFIG_DESC&) final;
-    virtual void StartTransfer(const TRANSFER_DESC&) final;
-    virtual bool IsBusy() volatile const final;
+    virtual void AddTransfer(const TRANSFER_DESC&, ITransferControl**) final;
+    virtual bool IsTransferInProgress() volatile const final;
 
 protected:
     // constructor
     CDMAChannel(const DESC&);
-	
-	// NVI
-	virtual void MarkTransferComplete() volatile final;
+
+    // NVI
+    virtual void MarkTransferComplete() final;
 
 private:
     // rule of three
@@ -58,12 +58,12 @@ private:
 
     // member variables
     uint8_t const m_id;
-    volatile bool m_busy;
+    volatile bool m_transfer_in_progress;
     volatile uint8_t m_transfer_id_current;
     volatile OnTransferComplete m_callback_transfer_complete;
 
     // abstract
-    virtual void SetConfig_impl(const CONFIG_DESC&)       = 0;
-    virtual void StartTransfer_impl(const TRANSFER_DESC&) = 0;
-	virtual void MarkTransferComplete_impl() volatile = 0;
+    virtual void SetConfig_impl(const CONFIG_DESC&) = 0;
+    virtual void AddTransfer_impl(const TRANSFER_DESC&, ITransferControl**) = 0;
+    virtual void MarkTransferComplete_impl() = 0;
 };
