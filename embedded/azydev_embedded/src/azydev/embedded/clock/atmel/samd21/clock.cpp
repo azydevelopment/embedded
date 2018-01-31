@@ -39,8 +39,8 @@ CClockAtmelSAMD21::~CClockAtmelSAMD21() {
 
 // static functions
 
-void CClockAtmelSAMD21::EnableClock(const CLOCK_AHB clockIndex, const bool enabled) {
-    uint32_t mask = 1 << static_cast<uint8_t>(clockIndex);
+void CClockAtmelSAMD21::SetEnableClock(const CLOCK_AHB clock, const bool enabled) {
+    uint32_t mask = 1 << static_cast<uint8_t>(clock);
     if (enabled) {
         PM->AHBMASK.reg |= mask;
     } else {
@@ -48,8 +48,8 @@ void CClockAtmelSAMD21::EnableClock(const CLOCK_AHB clockIndex, const bool enabl
     }
 }
 
-void CClockAtmelSAMD21::EnableClock(const CLOCK_APBA clockIndex, const bool enabled) {
-    uint32_t mask = 1 << static_cast<uint8_t>(clockIndex);
+void CClockAtmelSAMD21::SetEnableClock(const CLOCK_APBA clock, const bool enabled) {
+    uint32_t mask = 1 << static_cast<uint8_t>(clock);
     if (enabled) {
         PM->APBAMASK.reg |= mask;
     } else {
@@ -57,8 +57,8 @@ void CClockAtmelSAMD21::EnableClock(const CLOCK_APBA clockIndex, const bool enab
     }
 }
 
-void CClockAtmelSAMD21::EnableClock(const CLOCK_APBB clockIndex, const bool enabled) {
-    uint32_t mask = 1 << static_cast<uint8_t>(clockIndex);
+void CClockAtmelSAMD21::SetEnableClock(const CLOCK_APBB clock, const bool enabled) {
+    uint32_t mask = 1 << static_cast<uint8_t>(clock);
     if (enabled) {
         PM->APBBMASK.reg |= mask;
     } else {
@@ -66,13 +66,61 @@ void CClockAtmelSAMD21::EnableClock(const CLOCK_APBB clockIndex, const bool enab
     }
 }
 
-void CClockAtmelSAMD21::EnableClock(const CLOCK_APBC clockIndex, const bool enabled) {
-    uint32_t mask = 1 << static_cast<uint8_t>(clockIndex);
+void CClockAtmelSAMD21::SetEnableClock(const CLOCK_APBC clock, const bool enabled) {
+    uint32_t mask = 1 << static_cast<uint8_t>(clock);
     if (enabled) {
         PM->APBCMASK.reg |= mask;
     } else {
         PM->APBCMASK.reg &= ~mask;
     }
+}
+
+void CClockAtmelSAMD21::SetEnableClock(const CLOCK_GCLK clock, const GCLK_GENERATOR gclkGenerator, const bool enabled) {
+	uint8_t gclkId = static_cast<uint8_t>(clock);
+	
+	// disable this gclk first; need to do this for both disabling and enabling
+	{
+		// select gclk
+		GCLK->CLKCTRL.reg = gclkId << static_cast<uint8_t>(REG_CLKCTRL::ID);
+
+		// disable gclk
+		GCLK->CLKCTRL.reg &= ~(1 << static_cast<uint8_t>(REG_CLKCTRL::CLKEN));
+				
+		// wait until it's disabled
+		while (GCLK->CLKCTRL.reg & (1 << static_cast<uint8_t>(REG_CLKCTRL::CLKEN))) {
+		}
+	}
+	
+	// reenable it with a new config if requested
+	if (enabled) {
+		// write the new clkctrl register config
+		{
+			// prepare a new gclk clkctrl register
+			uint32_t clkctrl = 0;
+			{
+				// target this clock ID
+				clkctrl |= gclkId << static_cast<uint8_t>(REG_CLKCTRL::ID);
+
+				// set the generator
+				clkctrl |= static_cast<uint8_t>(gclkGenerator) << static_cast<uint8_t>(REG_CLKCTRL::GEN);
+			}
+			        
+			// actually write the new config
+			GCLK->CLKCTRL.reg = clkctrl;
+		}
+		        
+		// reenable the gclk
+		{
+			// select gclk
+			GCLK->CLKCTRL.reg = gclkId << static_cast<uint8_t>(REG_CLKCTRL::ID);
+
+			// enable gclk
+			GCLK->CLKCTRL.reg |= 1 << static_cast<uint8_t>(REG_CLKCTRL::CLKEN);
+		}
+
+		// TODO IMPLEMENT: Need this sometimes when enabling SERCOM clocks?
+		// sercom_set_gclk_generator(gclk_chan_conf.source_generator, false);
+	}
 }
 
 // CClock
@@ -82,52 +130,26 @@ void CClockAtmelSAMD21::SetConfig_impl(const CClock::CONFIG_DESC& config) {
 }
 
 void CClockAtmelSAMD21::SetEnabled_impl(const bool enabled) {
-    // enable/disable PM clocks
+    // enable/disable clocks
     {
         if (m_desc.clock_ahb != CLOCK_AHB::UNDEFINED) {
-            EnableClock(m_desc.clock_ahb, enabled);
+            SetEnableClock(m_desc.clock_ahb, enabled);
         }
 
         if (m_desc.clock_apba != CLOCK_APBA::UNDEFINED) {
-            EnableClock(m_desc.clock_apba, enabled);
+            SetEnableClock(m_desc.clock_apba, enabled);
         }
 
         if (m_desc.clock_apbb != CLOCK_APBB::UNDEFINED) {
-            EnableClock(m_desc.clock_apbb, enabled);
+            SetEnableClock(m_desc.clock_apbb, enabled);
         }
 
         if (m_desc.clock_apbc != CLOCK_APBC::UNDEFINED) {
-            EnableClock(m_desc.clock_apbc, enabled);
+            SetEnableClock(m_desc.clock_apbc, enabled);
         }
-    }
 
-    // enable/disable GCLK
-    if (m_desc.clock_gclk != CLOCK_GCLK::UNDEFINED) {
-        uint8_t gclk = static_cast<uint8_t>(m_desc.clock_gclk);
-        if (enabled) {
-            // prepare a new gclk clkctrl register
-            uint32_t clkctrl = 0;
-            {
-                // target this clock ID
-                clkctrl |= gclk;
-
-                // set the generator
-                clkctrl |= static_cast<uint8_t>(m_config.gclk_generator) << 8;
-            }
-
-            // disable this gclk for now
-            system_gclk_chan_disable(gclk);
-
-            // write the new clkctrl register config
-            GCLK->CLKCTRL.reg = clkctrl;
-
-            // reenable the gclk
-            system_gclk_chan_enable(gclk);
-
-            // TODO IMPLEMENT: Need this sometimes when enabling SERCOM clocks?
-            // sercom_set_gclk_generator(gclk_chan_conf.source_generator, false);
-        } else {
-            system_gclk_chan_disable(gclk);
-        }
-    }
+		if (m_desc.clock_gclk != CLOCK_GCLK::UNDEFINED) {
+			SetEnableClock(m_desc.clock_gclk, m_config.gclk_generator, enabled);
+		}
+	}
 }

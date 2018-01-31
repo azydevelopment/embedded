@@ -169,6 +169,37 @@ public:
     virtual ~CClockAtmelSAMD21() override final;
 
 private:
+	enum class REG_CTRL : uint8_t {
+		SWRST
+	};
+
+	enum class REG_STATUS : uint8_t {
+		SYNCBUSY = 7
+	};
+
+	enum class REG_CLKCTRL : uint8_t {
+		ID,
+		GEN = 8,
+		CLKEN = 14,
+		WRTLOCK
+	};
+	
+	enum class REG_GENCTRL : uint8_t {
+		ID,
+		SRC = 8,
+		GENEN = 16,
+		IDC,
+		OOV,
+		OE,
+		DIVSEL,
+		RUNSTDBY
+	};
+
+	enum class REG_GENDIV : uint8_t {
+		ID,
+		DIV = 8
+	};
+
     // rule of three
     CClockAtmelSAMD21(const CClockAtmelSAMD21&);
     CClockAtmelSAMD21& operator=(const CClockAtmelSAMD21&);
@@ -178,10 +209,11 @@ private:
     CONFIG_DESC m_config;
 
     // static functions
-    static void EnableClock(const CLOCK_AHB, const bool enabled);
-    static void EnableClock(const CLOCK_APBA, const bool enabled);
-    static void EnableClock(const CLOCK_APBB, const bool enabled);
-    static void EnableClock(const CLOCK_APBC, const bool enabled);
+    static void SetEnableClock(const CLOCK_AHB, const bool enabled);
+    static void SetEnableClock(const CLOCK_APBA, const bool enabled);
+    static void SetEnableClock(const CLOCK_APBB, const bool enabled);
+    static void SetEnableClock(const CLOCK_APBC, const bool enabled);
+	static void SetEnableClock(const CLOCK_GCLK, const GCLK_GENERATOR, const bool enabled);
 
     // CClock
     virtual void SetConfig_impl(const CClock::CONFIG_DESC&) override final;
