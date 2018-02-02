@@ -26,6 +26,8 @@
 
 #include <stdint.h>
 
+class IDMAPacket;
+
 class CDMAChannel : public IDMAEntity
 {
 public:
@@ -41,7 +43,7 @@ public:
     // NVI
     virtual uint8_t GetId() volatile const final;
     virtual void SetConfig(const CONFIG_DESC&) final;
-    virtual void AddTransfer(const TRANSFER_DESC&, ITransferControl**) final;
+    virtual void StartTransfer(const TRANSFER_DESC&, ITransferControl**) final;
     virtual bool IsTransferInProgress() volatile const final;
 
 protected:
@@ -64,6 +66,6 @@ private:
 
     // abstract
     virtual void SetConfig_impl(const CONFIG_DESC&) = 0;
-    virtual void AddTransfer_impl(const TRANSFER_DESC&, ITransferControl**) = 0;
+    virtual void StartTransfer_impl(const TRANSFER_DESC&, ITransferControl**) = 0;
     virtual void MarkTransferComplete_impl() = 0;
 };

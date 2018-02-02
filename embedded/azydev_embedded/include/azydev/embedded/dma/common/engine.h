@@ -43,7 +43,7 @@ public:
     // NVI
     virtual void SetConfig(const CONFIG_DESC&) final;
     virtual void SetEnabled(const bool) final;
-    virtual RESULT AddTransfer(const TRANSFER_DESC&, ITransferControl** = nullptr) final;
+    virtual RESULT StartTransfer(const TRANSFER_DESC&, ITransferControl** = nullptr) final;
 
 protected:
     // constructor

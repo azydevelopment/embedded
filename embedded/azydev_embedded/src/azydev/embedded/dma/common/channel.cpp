@@ -39,11 +39,11 @@ void CDMAChannel::SetConfig(const CONFIG_DESC& config) {
     SetConfig_impl(config);
 }
 
-void CDMAChannel::AddTransfer(const TRANSFER_DESC& transfer, ITransferControl** transferControl) {
+void CDMAChannel::StartTransfer(const TRANSFER_DESC& transfer, ITransferControl** transferControl) {
     m_transfer_in_progress = true;
-	m_transfer_id_current = transfer.transfer_id;
+	m_transfer_id_current = transfer.id;
 	m_callback_transfer_complete = transfer.callback_transfer_complete;
-    AddTransfer_impl(transfer, transferControl);
+    StartTransfer_impl(transfer, transferControl);
 }
 
 bool CDMAChannel::IsTransferInProgress() volatile const {

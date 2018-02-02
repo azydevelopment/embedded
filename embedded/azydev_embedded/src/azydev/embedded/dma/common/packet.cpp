@@ -20,46 +20,42 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE. */
 
-#include <azydev/embedded/dma/common/engine.h>
-
-#include <azydev/embedded/dma/common/channel.h>
+#include <azydev/embedded/dma/common/packet.h>
 
 /* PUBLIC */
 
+// constructor
+
+IDMAPacket::IDMAPacket(const DESC& desc)
+: m_max_size(desc.max_size)
+, m_num_current_bytes(0)
+, m_data(new uint8_t[desc.max_size]) {
+}
+
 // destructor
 
-CDMAEngine::~CDMAEngine() {
+IDMAPacket::~IDMAPacket() {
+	delete[] m_data;
 }
 
 // NVI
 
-void CDMAEngine::SetConfig(const CONFIG_DESC& config) {
-    SetConfig_impl(config);
+void IDMAPacket::Reset() {
+	m_num_current_bytes = 0;
 }
 
-void CDMAEngine::SetEnabled(const bool enabled) {
-    SetEnabled_impl(enabled);
+void IDMAPacket::Write(const uint8_t data) {
+	if(m_num_current_bytes < m_max_size) {
+		m_data[m_num_current_bytes] = data;
+		m_num_current_bytes++;
+	}
 }
 
-CDMAEngine::RESULT CDMAEngine::StartTransfer(const TRANSFER_DESC& transfer, ITransferControl** transferControl) {
-    RESULT result = RESULT::UNDEFINED;
-
-    CDMAChannel* channel = AcquireFreeChannel_impl();
-
-    if (channel != nullptr) {
-        channel->StartTransfer(transfer, transferControl);
-        result = RESULT::SUCCESS;
-    } else {
-        result = RESULT::FAIL_BUSY;
-    }
-
-    return result;
+const uint8_t* const IDMAPacket::GetData() const {
+	return m_data;
 }
 
-/* PROTECTED */
-
-// constructor
-
-CDMAEngine::CDMAEngine(const DESC&)
-    : IDMAEntity() {
+uint16_t IDMAPacket::GetNumBytes() const {
+	return m_num_current_bytes;
 }
+

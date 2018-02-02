@@ -24,6 +24,8 @@
 
 #include <stdint.h>
 
+class IDMAPacket;
+
 class IDMAEntity
 {
 public:
@@ -34,8 +36,6 @@ public:
 			virtual void TriggerTransferStep() = 0;
 	};
 
-	typedef void (*OnTransferComplete)(const uint8_t transferId);
-
 	enum class RESULT : uint8_t
 	{
 		SUCCESS   = 0,
@@ -43,9 +43,11 @@ public:
 		UNDEFINED = 255
 	};
 
-	struct TRANSFER_DESC
-	{
-		uint8_t transfer_id = 0;
+	typedef void (*OnTransferComplete)(const uint8_t transferId);
+
+	struct TRANSFER_DESC {
+		uint8_t id = 255;
+		IDMAPacket* dma_packet = nullptr;
 		OnTransferComplete callback_transfer_complete = nullptr;
 	};
 

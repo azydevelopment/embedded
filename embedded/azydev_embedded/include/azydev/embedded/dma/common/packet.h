@@ -20,46 +20,39 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE. */
 
-#include <azydev/embedded/dma/common/engine.h>
+#pragma once
 
-#include <azydev/embedded/dma/common/channel.h>
+#include <azydev/embedded/dma/common/entity.h>
 
-/* PUBLIC */
+#include <stdint.h>
 
-// destructor
+class IDMAPacket : public IDMAEntity
+{
+public:
+	struct DESC
+	{
+		uint16_t max_size = 0;
+	};
 
-CDMAEngine::~CDMAEngine() {
-}
+	// constructor
+	IDMAPacket(const DESC&);
 
-// NVI
+	// destructor
+	~IDMAPacket() final;
+	
+	// NVI
+	virtual void Reset() final;
+	virtual void Write(const uint8_t) final;
+	virtual const uint8_t* const GetData() const final;
+	virtual uint16_t GetNumBytes() const final;
 
-void CDMAEngine::SetConfig(const CONFIG_DESC& config) {
-    SetConfig_impl(config);
-}
-
-void CDMAEngine::SetEnabled(const bool enabled) {
-    SetEnabled_impl(enabled);
-}
-
-CDMAEngine::RESULT CDMAEngine::StartTransfer(const TRANSFER_DESC& transfer, ITransferControl** transferControl) {
-    RESULT result = RESULT::UNDEFINED;
-
-    CDMAChannel* channel = AcquireFreeChannel_impl();
-
-    if (channel != nullptr) {
-        channel->StartTransfer(transfer, transferControl);
-        result = RESULT::SUCCESS;
-    } else {
-        result = RESULT::FAIL_BUSY;
-    }
-
-    return result;
-}
-
-/* PROTECTED */
-
-// constructor
-
-CDMAEngine::CDMAEngine(const DESC&)
-    : IDMAEntity() {
-}
+private:
+	// rule of three
+	IDMAPacket(const IDMAPacket&);
+	IDMAPacket& operator=(const IDMAPacket&);
+	
+	// member variables
+	uint16_t m_max_size;
+	uint16_t m_num_current_bytes;
+	uint8_t* m_data;
+};

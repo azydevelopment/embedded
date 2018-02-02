@@ -22,6 +22,8 @@
 
 #include <azydev/embedded/dma/atmel/samd21/channel.h>
 
+#include <azydev/embedded/dma/common/packet.h>
+
 /* PUBLIC */
 
 // constructor
@@ -108,9 +110,11 @@ void CDMAChannelAtmelSAMD21::SetConfig_impl(const CDMAChannel::CONFIG_DESC& conf
     m_config = static_cast<const CDMAChannelAtmelSAMD21::CONFIG_DESC&>(config);
 }
 
-void CDMAChannelAtmelSAMD21::AddTransfer_impl(const IDMAEntity::TRANSFER_DESC& transfer, IDMAEntity::ITransferControl** transferControl) {
+void CDMAChannelAtmelSAMD21::StartTransfer_impl(const IDMAEntity::TRANSFER_DESC& transfer, IDMAEntity::ITransferControl** transferControl) {
     const CDMAChannelAtmelSAMD21::TRANSFER_DESC& transferSAMD21 =
         static_cast<const CDMAChannelAtmelSAMD21::TRANSFER_DESC&>(transfer);
+
+	IDMAPacket& packet = *transferSAMD21.dma_packet;
 
     // TODO IMPLEMENT: transferSAMD21.callback_on_complete
 
@@ -129,7 +133,7 @@ void CDMAChannelAtmelSAMD21::AddTransfer_impl(const IDMAEntity::TRANSFER_DESC& t
 
 		// store the trigger action and num beats to determine when the channel is pending
 		m_trigger_action = transferSAMD21.trigger_action;
-		m_num_beats_remaining = transferSAMD21.num_beats;
+		m_num_beats_remaining = packet.GetNumBytes();
 
         // write the channel config for this transfer
         {
@@ -165,8 +169,8 @@ void CDMAChannelAtmelSAMD21::AddTransfer_impl(const IDMAEntity::TRANSFER_DESC& t
             m_descriptor->btctrl.bits.stepsel =
                 static_cast<uint8_t>(transferSAMD21.step_size_select);
             m_descriptor->btctrl.bits.stepsize    = static_cast<uint8_t>(transferSAMD21.step_size);
-            m_descriptor->num_beats     = transferSAMD21.num_beats;
-            m_descriptor->source_address          = transferSAMD21.source_address;
+            m_descriptor->num_beats     = m_num_beats_remaining;
+            m_descriptor->source_address          = reinterpret_cast<uint32_t>(packet.GetData() + m_num_beats_remaining);
             m_descriptor->destination_address     = transferSAMD21.destination_address;
             m_descriptor->next_descriptor_address = 0;
 			

@@ -203,8 +203,6 @@ public:
         bool enable_destination_address_increment     = false;
         DESCRIPTOR::STEP_SIZE_SELECT step_size_select = DESCRIPTOR::STEP_SIZE_SELECT::DESTINATION;
         DESCRIPTOR::STEP_SIZE step_size               = DESCRIPTOR::STEP_SIZE::X1;
-        uint16_t num_beats                            = 0;
-        uint32_t source_address                       = 0;
         uint32_t destination_address                  = 0;
 
 		// interrupts
@@ -272,6 +270,6 @@ private:
 
     // CDMAChannel
     virtual void SetConfig_impl(const CDMAChannel::CONFIG_DESC&) override final;
-    virtual void AddTransfer_impl(const IDMAEntity::TRANSFER_DESC&, IDMAEntity::ITransferControl**) override final;
+    virtual void StartTransfer_impl(const IDMAEntity::TRANSFER_DESC&, IDMAEntity::ITransferControl**) override final;
 	virtual void MarkTransferComplete_impl() override final;
 };
