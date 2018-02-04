@@ -29,8 +29,23 @@
 class IDMAPacket : public IDMAEntity
 {
 public:
+	enum class DATA_TYPE
+	{
+		UINT8_T = 1,
+		UINT16_T,
+		UINT32_T
+	};
+
+	union DATA
+	{
+		uint8_t* data_8bit;
+		uint16_t* data_16bit;
+		uint32_t* data_32bit;
+	};
+
 	struct DESC
 	{
+		DATA_TYPE data_type = DATA_TYPE::UINT8_T;
 		uint16_t max_size = 0;
 	};
 
@@ -43,8 +58,9 @@ public:
 	// NVI
 	virtual void Reset() final;
 	virtual void Write(const uint8_t) final;
-	virtual const uint8_t* const GetData() const final;
-	virtual uint16_t GetNumBytes() const final;
+	virtual DATA_TYPE GetDataType() const final;
+	virtual uint16_t GetDataLength() const final;
+	virtual const DATA* const GetData() const final;
 
 private:
 	// rule of three
@@ -52,7 +68,8 @@ private:
 	IDMAPacket& operator=(const IDMAPacket&);
 	
 	// member variables
-	uint16_t m_max_size;
-	uint16_t m_num_current_bytes;
-	uint8_t* m_data;
+	uint16_t m_max_length;
+	DATA_TYPE m_data_type;
+	uint16_t m_data_length;
+	DATA m_data;
 };

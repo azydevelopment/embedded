@@ -27,35 +27,73 @@
 // constructor
 
 IDMAPacket::IDMAPacket(const DESC& desc)
-: m_max_size(desc.max_size)
-, m_num_current_bytes(0)
-, m_data(new uint8_t[desc.max_size]) {
+: m_max_length(desc.max_size)
+, m_data_type(desc.data_type)
+, m_data_length(0)
+, m_data({}) {
+
+	switch(GetDataType()) {
+		case DATA_TYPE::UINT8_T:
+			m_data.data_8bit = new uint8_t[GetDataLength()];
+			break;
+		case DATA_TYPE::UINT16_T:
+			m_data.data_16bit = new uint16_t[GetDataLength()];
+			break;
+		case DATA_TYPE::UINT32_T:
+			m_data.data_32bit = new uint32_t[GetDataLength()];
+			break;
+	}
+
 }
 
 // destructor
 
 IDMAPacket::~IDMAPacket() {
-	delete[] m_data;
+	switch(GetDataType()) {
+		case DATA_TYPE::UINT8_T:
+			delete[] m_data.data_8bit;
+			break;
+		case DATA_TYPE::UINT16_T:
+			delete[] m_data.data_16bit;
+			break;
+		case DATA_TYPE::UINT32_T:
+			delete[] m_data.data_32bit;
+			break;
+	}
 }
 
 // NVI
 
 void IDMAPacket::Reset() {
-	m_num_current_bytes = 0;
+	m_data_length = 0;
 }
 
 void IDMAPacket::Write(const uint8_t data) {
-	if(m_num_current_bytes < m_max_size) {
-		m_data[m_num_current_bytes] = data;
-		m_num_current_bytes++;
+	if(m_data_length < m_max_length) {
+		switch(GetDataType()) {
+			case DATA_TYPE::UINT8_T:
+				m_data.data_8bit[m_data_length] = data;
+				break;
+			case DATA_TYPE::UINT16_T:
+				m_data.data_16bit[m_data_length] = data;
+				break;
+			case DATA_TYPE::UINT32_T:
+				m_data.data_16bit[m_data_length] = data;
+				break;
+		}
+		m_data_length++;
 	}
 }
 
-const uint8_t* const IDMAPacket::GetData() const {
-	return m_data;
+IDMAPacket::DATA_TYPE IDMAPacket::GetDataType() const {
+	return m_data_type;
 }
 
-uint16_t IDMAPacket::GetNumBytes() const {
-	return m_num_current_bytes;
+uint16_t IDMAPacket::GetDataLength() const {
+	return m_data_length;
+}
+
+const IDMAPacket::DATA* const IDMAPacket::GetData() const {
+	return &m_data;
 }
 
