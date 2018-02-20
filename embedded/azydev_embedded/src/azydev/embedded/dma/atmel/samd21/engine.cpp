@@ -55,9 +55,9 @@ CDMAEngineAtmelSAMD21::CDMAEngineAtmelSAMD21(const DESC& desc)
         channelDesc.descriptor                   = &fs_descriptors[i];
         m_channels[i]                            = new CDMAChannelAtmelSAMD21(channelDesc);
     }
-	
-	// TODO HACK: Only one engine can ever exist
-	s_dma_engine = this;
+
+    // TODO HACK: Only one engine can ever exist
+    s_dma_engine = this;
 }
 
 // destructor
@@ -77,21 +77,21 @@ CDMAEngineAtmelSAMD21::~CDMAEngineAtmelSAMD21() {
 
 // TODO HACK: Remove ASF ISR usage
 void DMAC_Handler() {
-	CDMAEngineAtmelSAMD21::s_dma_engine->_ISR();
+    CDMAEngineAtmelSAMD21::s_dma_engine->_ISR();
 }
 
 void CDMAEngineAtmelSAMD21::_ISR() {
-	system_interrupt_enter_critical_section();
-	{
-		// TODO HACK: Hardcoded mask
-		uint8_t pendingChannelId = DMAC->INTPEND.reg & 0xF;
-		
-		CDMAChannelAtmelSAMD21& channel = GetChannel(pendingChannelId);
-		
-		// execute ISR for this particular channel
-		channel._ISR();
-	}
-	system_interrupt_leave_critical_section();
+    system_interrupt_enter_critical_section();
+    {
+        // TODO HACK: Hardcoded mask
+        uint8_t pendingChannelId = DMAC->INTPEND.reg & 0xF;
+
+        CDMAChannelAtmelSAMD21& channel = GetChannel(pendingChannelId);
+
+        // execute ISR for this particular channel
+        channel._ISR();
+    }
+    system_interrupt_leave_critical_section();
 }
 
 /* PRIVATE */
@@ -103,7 +103,7 @@ uint8_t CDMAEngineAtmelSAMD21::GetNumChannels() const {
 }
 
 CDMAChannelAtmelSAMD21& CDMAEngineAtmelSAMD21::GetChannel(const uint8_t channelId) const {
-	return *static_cast<CDMAChannelAtmelSAMD21*>(m_channels[channelId]);
+    return *static_cast<CDMAChannelAtmelSAMD21*>(m_channels[channelId]);
 }
 
 void CDMAEngineAtmelSAMD21::SetEnablePriority(
@@ -145,8 +145,8 @@ void CDMAEngineAtmelSAMD21::SetEnabled_impl(const bool enabled) {
 
     // TODO IMPLEMENT: CRC
 
-	// enable the DMA interrupt
-	NVIC->ISER[0] = 1 << 6;
+    // enable the DMA interrupt
+    NVIC->ISER[0] = 1 << 6;
 
     // exit critsec
     system_interrupt_leave_critical_section();
@@ -157,7 +157,7 @@ CDMAChannel* CDMAEngineAtmelSAMD21::AcquireFreeChannel_impl() {
 
     // find a free channel if there is one
     for (uint8_t i = 0; i < GetNumChannels(); i++) {
-		CDMAChannel& channelTemp = GetChannel(i);
+        CDMAChannel& channelTemp = GetChannel(i);
         if (!channelTemp.IsTransferInProgress()) {
             channel = &channelTemp;
             break;

@@ -40,9 +40,9 @@ void CDMAChannel::SetConfig(const CONFIG_DESC& config) {
 }
 
 void CDMAChannel::StartTransfer(const TRANSFER_DESC& transfer, ITransferControl** transferControl) {
-    m_transfer_in_progress = true;
-	m_transfer_id_current = transfer.id;
-	m_callback_transfer_complete = transfer.callback_transfer_complete;
+    m_transfer_in_progress       = true;
+    m_transfer_id_current        = transfer.id;
+    m_callback_transfer_complete = transfer.callback_transfer_complete;
     StartTransfer_impl(transfer, transferControl);
 }
 
@@ -65,9 +65,9 @@ CDMAChannel::CDMAChannel(const DESC& desc)
 // member functions
 
 void CDMAChannel::MarkTransferComplete() {
-	MarkTransferComplete_impl();
-	if(m_callback_transfer_complete != nullptr) {
-		m_callback_transfer_complete(m_transfer_id_current);
-	}
-	m_transfer_in_progress = false;
+    MarkTransferComplete_impl();
+    if (m_callback_transfer_complete != nullptr) {
+        m_callback_transfer_complete(m_transfer_id_current);
+    }
+    m_transfer_in_progress = false;
 }

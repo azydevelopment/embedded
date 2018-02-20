@@ -710,9 +710,9 @@
     <Folder Include="include\azydev\embedded\dma\atmel\" />
     <Folder Include="include\azydev\embedded\dma\atmel\samd21\" />
     <Folder Include="include\azydev\embedded\dma\common\" />
-    <Folder Include="include\azydev\embedded\logging" />
-    <Folder Include="include\azydev\embedded\logging\atmel" />
-    <Folder Include="include\azydev\embedded\logging\atmel\samd21" />
+    <Folder Include="include\azydev\embedded\logging\" />
+    <Folder Include="include\azydev\embedded\logging\atmel\" />
+    <Folder Include="include\azydev\embedded\logging\atmel\samd21\" />
     <Folder Include="include\azydev\embedded\pins\" />
     <Folder Include="include\azydev\embedded\pins\atmel\" />
     <Folder Include="include\azydev\embedded\pins\atmel\samd21\" />
@@ -929,7 +929,13 @@
     <Compile Include="include\azydev\embedded\dma\common\entity.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="include\azydev\embedded\dma\common\packet.h">
+    <Compile Include="include\azydev\embedded\dma\common\node.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\azydev\embedded\dma\common\node_address.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\azydev\embedded\dma\common\node_packet.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\azydev\embedded\logging\atmel\samd21\logger.h">
@@ -1634,7 +1640,13 @@
     <Compile Include="src\azydev\embedded\dma\common\engine.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\azydev\embedded\dma\common\packet.cpp">
+    <Compile Include="src\azydev\embedded\dma\common\node.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\azydev\embedded\dma\common\node_address.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\azydev\embedded\dma\common\node_packet.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\azydev\embedded\logging\atmel\samd21\logger.cpp">

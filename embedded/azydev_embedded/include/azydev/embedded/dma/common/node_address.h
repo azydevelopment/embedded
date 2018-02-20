@@ -22,50 +22,32 @@
 
 #pragma once
 
-#include <azydev/embedded/dma/common/entity.h>
+#include <azydev/embedded/dma/common/node.h>
 
 #include <stdint.h>
 
-class IDMANodePacket;
-
-class CDMAChannel : public IDMAEntity
+class IDMANodeAddress final : public IDMANode
 {
 public:
-    struct CONFIG_DESC
-    {};
+	struct DESC : IDMANode::DESC
+	{
+		uint32_t address;
+	};
 
-    struct DESC
-    { uint8_t id = 255; };
+	// constructor
+	IDMANodeAddress(const DESC&);
 
-    // destructor
-    virtual ~CDMAChannel() override;
-
-    // NVI
-    virtual uint8_t GetId() volatile const final;
-    virtual void SetConfig(const CONFIG_DESC&) final;
-    virtual void StartTransfer(const TRANSFER_DESC&, ITransferControl**) final;
-    virtual bool IsTransferInProgress() volatile const final;
-
-protected:
-    // constructor
-    CDMAChannel(const DESC&);
-
-    // NVI
-    virtual void MarkTransferComplete() final;
-
+	// destructor
+	virtual ~IDMANodeAddress() override final;
+	
 private:
-    // rule of three
-    CDMAChannel(const CDMAChannel&);
-    CDMAChannel& operator=(const CDMAChannel&);
-
-    // member variables
-    uint8_t const m_id;
-    volatile bool m_transfer_in_progress;
-    volatile uint8_t m_transfer_id_current;
-    volatile OnTransferComplete m_callback_transfer_complete;
-
-    // abstract
-    virtual void SetConfig_impl(const CONFIG_DESC&) = 0;
-    virtual void StartTransfer_impl(const TRANSFER_DESC&, ITransferControl**) = 0;
-    virtual void MarkTransferComplete_impl() = 0;
+	// rule of three
+	IDMANodeAddress(const IDMANodeAddress&);
+	IDMANodeAddress& operator=(const IDMANodeAddress&);
+	
+	// member variables
+	const uint32_t m_address;
+	
+	// IDMANode
+	virtual uint32_t GetAddress_impl() const override final;
 };

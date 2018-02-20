@@ -20,48 +20,26 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE. */
 
-#pragma once
+#include <azydev/embedded/dma/common/node_address.h>
 
-#include <stdint.h>
+/* PUBLIC */
 
-class IDMANode;
+// constructor
 
-class IDMAEntity
-{
-public:
-	class ITransferControl {
-		public:
-			virtual bool IsTransferInProgress() const = 0;
-			virtual bool IsPendingTrigger() const = 0;
-			virtual void TriggerTransferStep() = 0;
-	};
+IDMANodeAddress::IDMANodeAddress(const DESC& desc)
+	: IDMANode(desc)
+	, m_address(desc.address) {
+}
 
-	enum class RESULT : uint8_t
-	{
-		SUCCESS   = 0,
-		FAIL_BUSY = 1,
-		UNDEFINED = 255
-	};
+// destructor
 
-	typedef void (*OnTransferComplete)(const uint8_t transferId);
+IDMANodeAddress::~IDMANodeAddress() {
+}
 
-	struct TRANSFER_DESC {
-		uint8_t id = 255;
-		uint32_t num_beats;
-		IDMANode* node_source = nullptr;
-		IDMANode* node_destination = nullptr;
-		OnTransferComplete callback_transfer_complete = nullptr;
-	};
+/* PRIVATE */
 
-	// destructor
-	virtual ~IDMAEntity() {};
+// IDMANode
 
-protected:
-	// constructor
-	IDMAEntity() {};
-
-private:
-	// rule of three
-	IDMAEntity(const IDMAEntity&);
-	IDMAEntity& operator=(const IDMAEntity&);
-};
+uint32_t IDMANodeAddress::GetAddress_impl() const {
+	return m_address;
+}

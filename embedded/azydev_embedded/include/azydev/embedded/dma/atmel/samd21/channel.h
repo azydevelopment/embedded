@@ -177,7 +177,7 @@ public:
         };
 
         BLOCK_TRANSFER_CONTROL_CONFIG btctrl = {};
-        uint16_t num_beats         = 0;
+        uint32_t num_beats         = 0;
         uint32_t source_address              = 0;
         uint32_t destination_address         = 0;
         uint32_t next_descriptor_address     = 0;
@@ -199,11 +199,8 @@ public:
         DESCRIPTOR::BLOCK_COMPLETED_ACTION block_completed_action =
             DESCRIPTOR::BLOCK_COMPLETED_ACTION::DISABLE_IF_LAST;
         DESCRIPTOR::BEAT_SIZE beat_size               = DESCRIPTOR::BEAT_SIZE::BITS_8;
-        bool enable_source_address_increment          = false;
-        bool enable_destination_address_increment     = false;
         DESCRIPTOR::STEP_SIZE_SELECT step_size_select = DESCRIPTOR::STEP_SIZE_SELECT::DESTINATION;
         DESCRIPTOR::STEP_SIZE step_size               = DESCRIPTOR::STEP_SIZE::X1;
-        uint32_t destination_address                  = 0;
 
 		// interrupts
         bool enable_interrupt_transfer_error    = false;
@@ -263,9 +260,10 @@ private:
     DESCRIPTOR* const m_descriptor;
     CONFIG_DESC m_config;
 	TRIGGER_ACTION m_trigger_action;
-	uint16_t m_num_beats_remaining;
+	uint32_t m_num_beats_remaining;
 
     // member functions
+	uint32_t GetNumBeatsRemaining() const;
     void SetEnableInterrupt(const INTERRUPT, const bool enabled);
 
     // CDMAChannel

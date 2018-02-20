@@ -22,54 +22,44 @@
 
 #pragma once
 
-#include <azydev/embedded/dma/common/entity.h>
-
 #include <stdint.h>
 
-class IDMAPacket : public IDMAEntity
+class IDMANode
 {
 public:
-	enum class DATA_TYPE
+	enum class BEAT_PRIMITIVE
 	{
 		UINT8_T = 1,
 		UINT16_T,
 		UINT32_T
 	};
 
-	union DATA
-	{
-		uint8_t* data_8bit;
-		uint16_t* data_16bit;
-		uint32_t* data_32bit;
-	};
-
 	struct DESC
 	{
-		DATA_TYPE data_type = DATA_TYPE::UINT8_T;
-		uint16_t max_size = 0;
+		BEAT_PRIMITIVE data_type = BEAT_PRIMITIVE::UINT8_T;
+		bool is_incrementing = false;
 	};
 
 	// constructor
-	IDMAPacket(const DESC&);
+	IDMANode(const DESC&);
 
 	// destructor
-	~IDMAPacket() final;
+	virtual ~IDMANode();
 	
 	// NVI
-	virtual void Reset() final;
-	virtual void Write(const uint8_t) final;
-	virtual DATA_TYPE GetDataType() const final;
-	virtual uint16_t GetDataLength() const final;
-	virtual const DATA* const GetData() const final;
+	virtual BEAT_PRIMITIVE GetPrimitiveType() const final;
+	virtual uint32_t GetAddress() const final;
+	virtual bool IsIncrementing() const final;
 
 private:
 	// rule of three
-	IDMAPacket(const IDMAPacket&);
-	IDMAPacket& operator=(const IDMAPacket&);
+	IDMANode(const IDMANode&);
+	IDMANode& operator=(const IDMANode&);
 	
 	// member variables
-	uint16_t m_max_length;
-	DATA_TYPE m_data_type;
-	uint16_t m_data_length;
-	DATA m_data;
+	const BEAT_PRIMITIVE m_primitive_type;
+	const bool m_is_incrementing;
+	
+	// abstract
+	virtual uint32_t GetAddress_impl() const = 0;
 };

@@ -22,50 +22,61 @@
 
 #pragma once
 
-#include <azydev/embedded/dma/common/entity.h>
+#include <azydev/embedded/dma/common/node.h>
 
 #include <stdint.h>
 
-class IDMANodePacket;
-
-class CDMAChannel : public IDMAEntity
+class IDMANodePacket final : public IDMANode
 {
 public:
-    struct CONFIG_DESC
-    {};
+	enum class PACKET_TYPE
+	{
+		WRITE,
+		READ
+	};
 
-    struct DESC
-    { uint8_t id = 255; };
+	union DATA
+	{
+		uint8_t* data_8bit;
+		uint16_t* data_16bit;
+		uint32_t* data_32bit;
+	};
 
-    // destructor
-    virtual ~CDMAChannel() override;
+	struct CONFIG_DESC {
+		PACKET_TYPE packet_type = PACKET_TYPE::WRITE;
+	};
 
-    // NVI
-    virtual uint8_t GetId() volatile const final;
-    virtual void SetConfig(const CONFIG_DESC&) final;
-    virtual void StartTransfer(const TRANSFER_DESC&, ITransferControl**) final;
-    virtual bool IsTransferInProgress() volatile const final;
+	struct DESC : IDMANode::DESC
+	{
+		uint32_t num_beats_max = 0;
+	};
 
-protected:
-    // constructor
-    CDMAChannel(const DESC&);
+	// constructor
+	IDMANodePacket(const DESC&);
 
-    // NVI
-    virtual void MarkTransferComplete() final;
+	// destructor
+	virtual ~IDMANodePacket() override final;
+	
+	// NVI
+	virtual void Reset(const CONFIG_DESC&) final;
+	virtual PACKET_TYPE GetPacketType() const final;
+	virtual uint32_t GetNumBeatsMax() const final;
+	virtual void Write(const uint8_t) final;
+	virtual void Write(const uint16_t) final;
+	virtual void Write(const uint32_t) final;
+	virtual void PrepareForRead(const uint32_t numBeats) final;
 
 private:
-    // rule of three
-    CDMAChannel(const CDMAChannel&);
-    CDMAChannel& operator=(const CDMAChannel&);
-
-    // member variables
-    uint8_t const m_id;
-    volatile bool m_transfer_in_progress;
-    volatile uint8_t m_transfer_id_current;
-    volatile OnTransferComplete m_callback_transfer_complete;
-
-    // abstract
-    virtual void SetConfig_impl(const CONFIG_DESC&) = 0;
-    virtual void StartTransfer_impl(const TRANSFER_DESC&, ITransferControl**) = 0;
-    virtual void MarkTransferComplete_impl() = 0;
+	// rule of three
+	IDMANodePacket(const IDMANodePacket&);
+	IDMANodePacket& operator=(const IDMANodePacket&);
+	
+	// member variables
+	PACKET_TYPE m_packet_type;
+	uint32_t m_num_beats_max;
+	uint32_t m_num_beats;
+	DATA m_data;
+	
+	// IDMANode
+	virtual uint32_t GetAddress_impl() const override final;
 };

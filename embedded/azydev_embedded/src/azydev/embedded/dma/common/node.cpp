@@ -20,48 +20,32 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE. */
 
-#pragma once
+#include <azydev/embedded/dma/common/node.h>
 
-#include <stdint.h>
+/* PUBLIC */
 
-class IDMANode;
+// constructor
 
-class IDMAEntity
-{
-public:
-	class ITransferControl {
-		public:
-			virtual bool IsTransferInProgress() const = 0;
-			virtual bool IsPendingTrigger() const = 0;
-			virtual void TriggerTransferStep() = 0;
-	};
+IDMANode::IDMANode(const DESC& desc)
+	: m_primitive_type(desc.data_type)
+	, m_is_incrementing(desc.is_incrementing) {
+}
 
-	enum class RESULT : uint8_t
-	{
-		SUCCESS   = 0,
-		FAIL_BUSY = 1,
-		UNDEFINED = 255
-	};
+// destructor
 
-	typedef void (*OnTransferComplete)(const uint8_t transferId);
+IDMANode::~IDMANode() {
+}
 
-	struct TRANSFER_DESC {
-		uint8_t id = 255;
-		uint32_t num_beats;
-		IDMANode* node_source = nullptr;
-		IDMANode* node_destination = nullptr;
-		OnTransferComplete callback_transfer_complete = nullptr;
-	};
+// NVI
 
-	// destructor
-	virtual ~IDMAEntity() {};
+IDMANode::BEAT_PRIMITIVE IDMANode::GetPrimitiveType() const {
+	return m_primitive_type;
+}
 
-protected:
-	// constructor
-	IDMAEntity() {};
+uint32_t IDMANode::GetAddress() const {
+	return GetAddress_impl();
+}
 
-private:
-	// rule of three
-	IDMAEntity(const IDMAEntity&);
-	IDMAEntity& operator=(const IDMAEntity&);
-};
+bool IDMANode::IsIncrementing() const {
+	return m_is_incrementing;
+}
