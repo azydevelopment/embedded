@@ -111,13 +111,13 @@ uint32_t IDMANodePacket::GetAddress_impl() const {
     uint32_t address = 0;
     switch (GetPrimitiveType()) {
     case BEAT_PRIMITIVE::UINT8_T:
-        address = reinterpret_cast<uint32_t>(&(m_data.data_8bit));
+        address = reinterpret_cast<uint32_t>(m_data.data_8bit);
         break;
     case BEAT_PRIMITIVE::UINT16_T:
-        address = reinterpret_cast<uint32_t>(&(m_data.data_16bit));
+        address = reinterpret_cast<uint32_t>(m_data.data_16bit);
         break;
     case BEAT_PRIMITIVE::UINT32_T:
-        address = reinterpret_cast<uint32_t>(&(m_data.data_32bit));
+        address = reinterpret_cast<uint32_t>(m_data.data_32bit);
         break;
     }
     return address;
