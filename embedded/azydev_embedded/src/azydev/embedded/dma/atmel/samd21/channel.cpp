@@ -237,7 +237,7 @@ void CDMAChannelAtmelSAMD21::MarkTransferComplete_impl() {
         DMAC->CHID.reg = GetId();
 
         // clear the transfer complete interrupt flag
-        DMAC->CHINTFLAG.reg |= 1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_COMPLETE);
+        DMAC->CHINTFLAG.reg = 1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_COMPLETE);
     }
     system_interrupt_leave_critical_section();
 }
