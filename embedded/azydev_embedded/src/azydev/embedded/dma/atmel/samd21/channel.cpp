@@ -1,24 +1,24 @@
 /* The MIT License (MIT)
-*
-* Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE. */
+ *
+ * Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE. */
 
 #include <azydev/embedded/dma/atmel/samd21/channel.h>
 
@@ -47,7 +47,15 @@ void CDMAChannelAtmelSAMD21::_ISR() {
     system_interrupt_enter_critical_section();
     {
         // clean up
-        MarkTransferComplete();
+        {
+            if (DMAC->CHINTFLAG.reg
+                & (1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_COMPLETE))) {
+                MarkTransferEnded(RESULT::SUCCESS);
+            } else if (
+                DMAC->CHINTFLAG.reg & (1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_ERROR))) {
+                MarkTransferEnded(RESULT::FAIL_ERROR);
+            }
+        }
     }
     system_interrupt_leave_critical_section();
 }
@@ -98,8 +106,8 @@ void CDMAChannelAtmelSAMD21::TriggerTransferStep() {
 
 // member functions
 
-uint32_t CDMAChannelAtmelSAMD21::GetNumBeatsRemaining() const {
-	return m_num_beats_remaining;
+uint16_t CDMAChannelAtmelSAMD21::GetNumBeatsRemaining() const {
+    return m_num_beats_remaining;
 }
 
 void CDMAChannelAtmelSAMD21::SetEnableInterrupt(const INTERRUPT interrupt, const bool enabled) {
@@ -166,25 +174,26 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(
             // calculate source data address
             uint32_t addressSrc = 0;
             {
-				uint32_t offset = 0;
-				if(nodeSrc.IsIncrementing()) {
-					offset = GetNumBeatsRemaining() * static_cast<uint8_t>(nodeSrc.GetPrimitiveType());
-				}
-				
+                uint32_t offset = 0;
+                if (nodeSrc.IsIncrementing()) {
+                    offset =
+                        GetNumBeatsRemaining() * static_cast<uint8_t>(nodeSrc.GetPrimitiveType());
+                }
+
                 addressSrc = nodeSrc.GetAddress() + offset;
             }
-			
-			// calculate source data destination
-			uint32_t addressDest = 0;
-			{
-				uint32_t offset = 0;
-				if(nodeDest.IsIncrementing()) {
-					offset = GetNumBeatsRemaining() * static_cast<uint8_t>(nodeDest.GetPrimitiveType());
-				}
-				
-				addressDest = nodeDest.GetAddress() + offset;
-			}
 
+            // calculate source data destination
+            uint32_t addressDest = 0;
+            {
+                uint32_t offset = 0;
+                if (nodeDest.IsIncrementing()) {
+                    offset =
+                        GetNumBeatsRemaining() * static_cast<uint8_t>(nodeDest.GetPrimitiveType());
+                }
+
+                addressDest = nodeDest.GetAddress() + offset;
+            }
 
             m_descriptor->btctrl.bits.valid = true;
             m_descriptor->btctrl.bits.evosel =
@@ -192,10 +201,8 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(
             m_descriptor->btctrl.bits.blockact =
                 static_cast<uint8_t>(transferSAMD21.block_completed_action);
             m_descriptor->btctrl.bits.beatsize = static_cast<uint8_t>(transferSAMD21.beat_size);
-            m_descriptor->btctrl.bits.srcinc =
-                static_cast<uint8_t>(nodeSrc.IsIncrementing());
-            m_descriptor->btctrl.bits.dstinc =
-                static_cast<uint8_t>(nodeDest.IsIncrementing());
+            m_descriptor->btctrl.bits.srcinc   = static_cast<uint8_t>(nodeSrc.IsIncrementing());
+            m_descriptor->btctrl.bits.dstinc   = static_cast<uint8_t>(nodeDest.IsIncrementing());
             m_descriptor->btctrl.bits.stepsel =
                 static_cast<uint8_t>(transferSAMD21.step_size_select);
             m_descriptor->btctrl.bits.stepsize    = static_cast<uint8_t>(transferSAMD21.step_size);
@@ -215,8 +222,8 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(
             // optionally enable the transfer error and suspend interrupt flags
             SetEnableInterrupt(
                 INTERRUPT::ON_TRANSFER_ERROR, transferSAMD21.enable_interrupt_transfer_error);
-            SetEnableInterrupt(
-                INTERRUPT::ON_SUSPEND, transferSAMD21.enable_interrupt_channel_suspend);
+            // SetEnableInterrupt(
+            // INTERRUPT::ON_SUSPEND, transferSAMD21.enable_interrupt_channel_suspend);
         }
 
         // enable the transfer channel
@@ -230,14 +237,24 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(
     system_interrupt_leave_critical_section();
 }
 
-void CDMAChannelAtmelSAMD21::MarkTransferComplete_impl() {
+void CDMAChannelAtmelSAMD21::MarkTransferEnded_impl(const RESULT result) {
     system_interrupt_enter_critical_section();
     {
         // select our channel
         DMAC->CHID.reg = GetId();
 
-        // clear the transfer complete interrupt flag
-        DMAC->CHINTFLAG.reg = 1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_COMPLETE);
+        switch (result) {
+        case RESULT::SUCCESS:
+            // clear the transfer complete interrupt flag
+            DMAC->CHINTFLAG.reg = 1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_COMPLETE);
+            break;
+        case RESULT::FAIL_ERROR:
+            // clear the transfer error interrupt flag
+            DMAC->CHINTFLAG.reg = 1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_ERROR);
+            break;
+        default:
+            break;
+        }
     }
     system_interrupt_leave_critical_section();
 }

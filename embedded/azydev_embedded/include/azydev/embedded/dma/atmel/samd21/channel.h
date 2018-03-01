@@ -1,24 +1,24 @@
 /* The MIT License (MIT)
-*
-* Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE. */
+ *
+ * Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE. */
 
 #pragma once
 
@@ -28,9 +28,7 @@
 
 #include <asf.h>
 
-class CDMAChannelAtmelSAMD21 final
-	: public CDMAChannel
-	, public IDMAEntity::ITransferControl
+class CDMAChannelAtmelSAMD21 final : public CDMAChannel, public IDMAEntity::ITransferControl
 {
 public:
     enum class TRIGGER : uint8_t
@@ -92,10 +90,10 @@ public:
 
     enum class TRIGGER_ACTION : uint8_t
     {
-        START_BLOCK       = DMAC_CHCTRLB_TRIGACT_BLOCK_Val,
-        START_BEAT        = DMAC_CHCTRLB_TRIGACT_BEAT_Val,
-        START_TRANSACTION = DMAC_CHCTRLB_TRIGACT_TRANSACTION_Val,
-        UNDEFINED         = 255
+        START_BLOCK,
+        START_BEAT = 2,
+        START_TRANSACTION,
+        UNDEFINED = 255
     };
 
     enum class PRIORITY : uint8_t
@@ -177,7 +175,7 @@ public:
         };
 
         BLOCK_TRANSFER_CONTROL_CONFIG btctrl = {};
-        uint32_t num_beats         = 0;
+        uint16_t num_beats                   = 0;
         uint32_t source_address              = 0;
         uint32_t destination_address         = 0;
         uint32_t next_descriptor_address     = 0;
@@ -202,16 +200,19 @@ public:
         DESCRIPTOR::STEP_SIZE_SELECT step_size_select = DESCRIPTOR::STEP_SIZE_SELECT::DESTINATION;
         DESCRIPTOR::STEP_SIZE step_size               = DESCRIPTOR::STEP_SIZE::X1;
 
-		// interrupts
-        bool enable_interrupt_transfer_error    = false;
-        bool enable_interrupt_channel_suspend   = false;
+        // interrupts
+        bool enable_interrupt_transfer_error = false;
+        // bool enable_interrupt_channel_suspend   = false;
     };
 
     struct CONFIG_DESC : CDMAChannel::CONFIG_DESC
-    {};
+    {
+    };
 
     struct DESC : CDMAChannel::DESC
-    { DESCRIPTOR* descriptor; };
+    {
+        DESCRIPTOR* descriptor;
+    };
 
     // constructor
     CDMAChannelAtmelSAMD21(const DESC&);
@@ -219,13 +220,13 @@ public:
     // destructor
     virtual ~CDMAChannelAtmelSAMD21() override final;
 
-	// ISR
-	void _ISR();
+    // ISR
+    void _ISR();
 
-	// IDMAEntity::ITransferControl
-	virtual bool IsTransferInProgress() const override final;
-	virtual bool IsPendingTrigger() const override final;
-	virtual void TriggerTransferStep() override final;
+    // IDMAEntity::ITransferControl
+    virtual bool IsTransferInProgress() const override final;
+    virtual bool IsPendingTrigger() const override final;
+    virtual void TriggerTransferStep() override final;
 
 private:
     enum class REG_CHCTRLA : uint8_t
@@ -259,15 +260,17 @@ private:
     // member variables
     DESCRIPTOR* const m_descriptor;
     CONFIG_DESC m_config;
-	TRIGGER_ACTION m_trigger_action;
-	uint32_t m_num_beats_remaining;
+    TRIGGER_ACTION m_trigger_action;
+    uint16_t m_num_beats_remaining;
 
     // member functions
-	uint32_t GetNumBeatsRemaining() const;
+    uint16_t GetNumBeatsRemaining() const;
     void SetEnableInterrupt(const INTERRUPT, const bool enabled);
 
     // CDMAChannel
     virtual void SetConfig_impl(const CDMAChannel::CONFIG_DESC&) override final;
-    virtual void StartTransfer_impl(const IDMAEntity::TRANSFER_DESC&, IDMAEntity::ITransferControl**) override final;
-	virtual void MarkTransferComplete_impl() override final;
+    virtual void StartTransfer_impl(
+        const IDMAEntity::TRANSFER_DESC&,
+        IDMAEntity::ITransferControl**) override final;
+    virtual void MarkTransferEnded_impl(const RESULT) override final;
 };
