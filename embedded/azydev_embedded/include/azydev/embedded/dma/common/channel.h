@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 
-class IDMANodePacket;
+class CDMANodePacket;
 
 class CDMAChannel : public IDMAEntity
 {

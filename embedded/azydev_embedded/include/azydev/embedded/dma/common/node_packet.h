@@ -1,24 +1,24 @@
 /* The MIT License (MIT)
-*
-* Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE. */
+ *
+ * Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE. */
 
 #pragma once
 
@@ -26,57 +26,58 @@
 
 #include <stdint.h>
 
-class IDMANodePacket final : public IDMANode
+class CDMANodePacket final : public IDMANode
 {
 public:
-	enum class PACKET_TYPE
-	{
-		WRITE,
-		READ
-	};
+    enum class PACKET_TYPE
+    {
+        WRITE,
+        READ
+    };
 
-	union DATA
-	{
-		uint8_t* data_8bit;
-		uint16_t* data_16bit;
-		uint32_t* data_32bit;
-	};
+    union DATA
+    {
+        uint8_t* data_8bit;
+        uint16_t* data_16bit;
+        uint32_t* data_32bit;
+    };
 
-	struct CONFIG_DESC {
-		PACKET_TYPE packet_type = PACKET_TYPE::WRITE;
-	};
+    struct CONFIG_DESC
+    {
+        PACKET_TYPE packet_type = PACKET_TYPE::WRITE;
+    };
 
-	struct DESC : IDMANode::DESC
-	{
-		uint32_t num_beats_max = 0;
-	};
+    struct DESC : IDMANode::DESC
+    {
+        uint32_t num_beats_max = 0;
+    };
 
-	// constructor
-	IDMANodePacket(const DESC&);
+    // constructor
+    CDMANodePacket(const DESC&);
 
-	// destructor
-	virtual ~IDMANodePacket() override final;
-	
-	// NVI
-	virtual void Reset(const CONFIG_DESC&) final;
-	virtual PACKET_TYPE GetPacketType() const final;
-	virtual uint32_t GetNumBeatsMax() const final;
-	virtual void Write(const uint8_t) final;
-	virtual void Write(const uint16_t) final;
-	virtual void Write(const uint32_t) final;
-	virtual void PrepareForRead(const uint32_t numBeats) final;
+    // destructor
+    virtual ~CDMANodePacket() override final;
+
+    // NVI
+    virtual void Reset(const CONFIG_DESC&) final;
+    virtual PACKET_TYPE GetPacketType() const final;
+    virtual uint32_t GetNumBeatsMax() const final;
+    virtual void Write(const uint8_t) final;
+    virtual void Write(const uint16_t) final;
+    virtual void Write(const uint32_t) final;
+    virtual void PrepareForRead(const uint32_t numBeats) final;
 
 private:
-	// rule of three
-	IDMANodePacket(const IDMANodePacket&);
-	IDMANodePacket& operator=(const IDMANodePacket&);
-	
-	// member variables
-	PACKET_TYPE m_packet_type;
-	uint32_t m_num_beats_max;
-	uint32_t m_num_beats;
-	DATA m_data;
-	
-	// IDMANode
-	virtual uint32_t GetAddress_impl() const override final;
+    // rule of three
+    CDMANodePacket(const CDMANodePacket&);
+    CDMANodePacket& operator=(const CDMANodePacket&);
+
+    // member variables
+    PACKET_TYPE m_packet_type;
+    uint32_t m_num_beats_max;
+    uint32_t m_num_beats;
+    DATA m_data;
+
+    // IDMANode
+    virtual uint32_t GetAddress_impl() const override final;
 };
