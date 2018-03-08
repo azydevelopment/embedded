@@ -1,24 +1,24 @@
 /* The MIT License (MIT)
-*
-* Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE. */
+ *
+ * Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE. */
 
 #pragma once
 
@@ -29,6 +29,8 @@
 #include <asf/sam0/drivers/sercom/sercom.h>
 
 class CPinsAtmelSAMD21;
+class CDMAEngine;
+class CDMANodePacket;
 
 class CSPIBusAtmelSAMD21 final : public CSPIBus<uint16_t>
 {
@@ -96,6 +98,11 @@ public:
         bool enable_interrupt_receive_complete      = false;
         bool enable_interrupt_transmit_complete     = false;
         bool enable_interrupt_data_register_empty   = false;
+
+        // DMA
+        bool is_dma_driven         = false;
+        CDMAEngine* dma_engine     = nullptr;
+        CDMANodePacket* dma_packet = nullptr;
     };
 
     struct PIN_CONFIG_DESC
@@ -109,8 +116,10 @@ public:
     };
 
     struct DESC : CSPIBus<uint16_t>::DESC
-    {	SercomSpi* sercomSpi = nullptr;
-		PIN_CONFIG_DESC pin_config = {}; };
+    {
+        SercomSpi* sercomSpi       = nullptr;
+        PIN_CONFIG_DESC pin_config = {};
+    };
 
     // constructor
     CSPIBusAtmelSAMD21(const DESC&, CPinsAtmelSAMD21&);
@@ -118,17 +127,29 @@ public:
     // destructor
     virtual ~CSPIBusAtmelSAMD21() override;
 
+protected:
+    bool IsDMADriven() const;
+    CDMANodePacket& GetDMAPacket() const;
+
+    // CSPIBus
+    virtual bool IsImmediate() const override final;
+
 private:
+    enum class REG_INTFLAG : uint8_t
+    {
+        DRE,
+        TXC,
+        RXC,
+        SSL,
+        ERROR = 7
+    };
+
     // member variables
     SercomSpi* m_sercom_spi;
     CPinsAtmelSAMD21& m_service_pins;
     PIN_CONFIG_DESC m_pin_config;
     CONFIG_DESC m_bus_config;
     DUPLEX_MODE m_duplex_mode;
-
-    // methods
-    STATUS WaitForBusSync();
-    STATUS WaitForTransfer();
 
     // CSPIEntity
     virtual STATUS SetRole_impl(const ROLE) override final;

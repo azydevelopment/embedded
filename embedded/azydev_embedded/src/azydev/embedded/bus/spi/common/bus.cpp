@@ -1,24 +1,24 @@
 /* The MIT License (MIT)
-*
-* Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE. */
+ *
+ * Copyright (c) 2017 Andrew Yeung <azy.development@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE. */
 
 #include <azydev/embedded/bus/spi/common/bus.h>
 
@@ -65,12 +65,17 @@ template<typename TRANSFER_PRIMITIVE>
 CSPIEntity::STATUS CSPIBus<TRANSFER_PRIMITIVE>::Start(const uint8_t deviceId) {
     // TODO ERROR_HANDLING: Disallow transaction initiation when in worker mode
     // TODO ERROR_HANDLING: Check for already active device
+    // TODO ERROR_HANDLING: Bubble up error statuses
     // TODO HACK: Device ID is not necessarily the index.  Should find a way to do hashmaps.
 
-    STATUS status      = m_devices[deviceId]->SetActive(true);
-    status             = Start_impl(deviceId);
+    if (IsImmediate()) {
+        m_devices[deviceId]->SetActive(true);
+    }
+
+    Start_impl(deviceId);
     m_active_device_id = deviceId;
-    return status;
+
+    return STATUS::OK;
 }
 
 template<typename TRANSFER_PRIMITIVE>
@@ -85,14 +90,22 @@ CSPIEntity::STATUS CSPIBus<TRANSFER_PRIMITIVE>::Read(TRANSFER_PRIMITIVE& outData
 
 template<typename TRANSFER_PRIMITIVE>
 CSPIEntity::STATUS CSPIBus<TRANSFER_PRIMITIVE>::Stop() {
-    // TODO ERROR_HANDLING: Disallow transaction initiation when in worker mode (ending cannot happen
-    // if starting never did)
+    // TODO ERROR_HANDLING: Disallow transaction initiation when in worker mode (ending cannot
+    // happen if starting never did)
     // TODO ERROR_HANDLING: Check for active device
     // TODO HACK: Device ID is not necessarily the index.  Should find a way to do hashmaps.
-    STATUS status      = Stop_impl();
-    status             = m_devices[m_active_device_id]->SetActive(false);
+
+    // when in deferred mode, only activate and commit transfer in the upon Stop()
+    if (!IsImmediate()) {
+        m_devices[m_active_device_id]->SetActive(true);
+    }
+
+    Stop_impl();
+
+    m_devices[m_active_device_id]->SetActive(false);
     m_active_device_id = 255;
-    return status;
+
+    return STATUS::OK;
 }
 
 /* PROTECTED */

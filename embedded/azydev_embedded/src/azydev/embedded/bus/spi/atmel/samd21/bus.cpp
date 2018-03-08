@@ -22,6 +22,8 @@
 
 #include <azydev/embedded/bus/spi/atmel/samd21/bus.h>
 
+#include <azydev/embedded/dma/common/engine.h>
+#include <azydev/embedded/dma/common/node_packet.h>
 #include <azydev/embedded/pins/atmel/samd21/pins.h>
 #include <azydev/embedded/util/binary.h>
 
@@ -41,25 +43,23 @@ CSPIBusAtmelSAMD21::CSPIBusAtmelSAMD21(const DESC& desc, CPinsAtmelSAMD21& pins)
 CSPIBusAtmelSAMD21::~CSPIBusAtmelSAMD21() {
 }
 
+/* PROTECTED */
+
+bool CSPIBusAtmelSAMD21::IsDMADriven() const {
+    return m_bus_config.is_dma_driven;
+}
+
+CDMANodePacket& CSPIBusAtmelSAMD21::GetDMAPacket() const {
+    return *(m_bus_config.dma_packet);
+}
+
+// CSPIBus
+
+bool CSPIBusAtmelSAMD21::IsImmediate() const {
+    return !IsDMADriven();
+}
+
 /* PRIVATE */
-
-// methods
-
-CSPIEntity::STATUS CSPIBusAtmelSAMD21::WaitForBusSync() {
-    // wait for bus to finish sync
-    while (m_sercom_spi->SYNCBUSY.reg != 0) {
-        // TODO ERROR_HANDLING: Timeout
-    }
-    return CSPIEntity::STATUS::OK;
-}
-
-CSPIEntity::STATUS CSPIBusAtmelSAMD21::WaitForTransfer() {
-    while (!Binary::BC(m_sercom_spi->INTFLAG.reg, SERCOM_SPI_INTFLAG_DRE_Pos)) {
-        // TODO ERROR_HANDLING: Timeout
-    }
-
-    return STATUS::OK;
-}
 
 // CSPIEntity
 
@@ -70,7 +70,7 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::SetRole_impl(const ROLE) {
 // CSPIBus
 
 void CSPIBusAtmelSAMD21::SetConfig_impl(const CSPIBus::CONFIG_DESC& busConfig) {
-    // TODO ERROR_HANDLING: Dangerous cast.  Can use GUID for struct type for safety?
+    // TODO ERROR_HANDLING: Dangerous cast
     m_bus_config  = static_cast<const CONFIG_DESC&>(busConfig);
     m_duplex_mode = m_bus_config.duplex_mode_intial;
 }
@@ -198,8 +198,10 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::SetEnabled_impl(bool enable) {
         // enable SPI
         m_sercom_spi->CTRLA.reg |= SERCOM_SPI_CTRLA_ENABLE;
 
-        // TODO ERROR_HANDLING: Timeout
-        WaitForBusSync();
+        // wait for bus to finish sync
+        while (m_sercom_spi->SYNCBUSY.reg != 0) {
+            // TODO ERROR_HANDLING: Timeout
+        }
     }
 
     return STATUS::OK;
@@ -222,42 +224,64 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::Start_impl(const uint8_t deviceId) {
 
 CSPIEntity::STATUS CSPIBusAtmelSAMD21::Read_impl(uint16_t& outData) {
     // TODO ERROR_HANDLING: RX buffer overflow
+    // TODO IMPLEMENT: DMA driven reads
 
-    switch (m_bus_config.character_size) {
-    case CHARACTER_SIZE::BITS_8:
-        outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 8);
-        break;
-    case CHARACTER_SIZE::BITS_9:
-        outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 9);
-        break;
-    default:
-        // TODO ERROR_HANDLING
-        break;
+    STATUS result = STATUS::OK;
+
+    while (!Binary::BC(m_sercom_spi->INTFLAG.reg, static_cast<uint8_t>(REG_INTFLAG::RXC))) {
+        // TODO ERROR_HANDLING: Timeout
     }
 
-    return WaitForTransfer();
+    if (result == STATUS::OK) {
+        switch (m_bus_config.character_size) {
+        case CHARACTER_SIZE::BITS_8:
+            outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 8);
+            break;
+        case CHARACTER_SIZE::BITS_9:
+            outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 9);
+            break;
+        default:
+            // TODO ERROR_HANDLING
+            break;
+        }
+    }
+    return result;
 }
 
 CSPIEntity::STATUS CSPIBusAtmelSAMD21::Write_impl(const uint16_t data) {
-    switch (m_bus_config.character_size) {
-    case CHARACTER_SIZE::BITS_8:
-        m_sercom_spi->DATA.reg = Binary::BM<uint16_t>(data, 0, 8);
-        break;
-    case CHARACTER_SIZE::BITS_9:
-        m_sercom_spi->DATA.reg = Binary::BM<uint16_t>(data, 0, 9);
-        break;
-    default:
-        // TODO ERROR_HANDLING
-        break;
+    STATUS result = STATUS::UNDEFINED;
+    if (IsDMADriven()) {
+        GetDMAPacket().Write(data);
+    } else {
+        switch (m_bus_config.character_size) {
+        case CHARACTER_SIZE::BITS_8:
+            m_sercom_spi->DATA.reg = Binary::BM<uint16_t>(data, 0, 8);
+            break;
+        case CHARACTER_SIZE::BITS_9:
+            m_sercom_spi->DATA.reg = Binary::BM<uint16_t>(data, 0, 9);
+            break;
+        default:
+            // TODO ERROR_HANDLING
+            break;
+        }
+
+        result = STATUS::OK;
+
+        // wait for transmit
+        while (!Binary::BC(m_sercom_spi->INTFLAG.reg, static_cast<uint8_t>(REG_INTFLAG::TXC))) {
+            // TODO ERROR_HANDLING: Timeout
+        }
+
+        // clear transmit flag
+        Binary::BS(m_sercom_spi->INTFLAG.reg, static_cast<uint8_t>(REG_INTFLAG::TXC), true);
     }
 
-    return WaitForTransfer();
+    return result;
 }
 
 CSPIEntity::STATUS CSPIBusAtmelSAMD21::Stop_impl() {
-    // wait until transmission is complete
-    while (!Binary::BC(m_sercom_spi->INTFLAG.reg, SERCOM_SPI_INTFLAG_TXC_Pos)) {
-        // TODO ERROR_HANDLING: Timeout
+    // if transmission is actually a deferred transmission
+    if (!IsImmediate()) {
     }
 
     return STATUS::OK;
