@@ -24,9 +24,9 @@
 
 #include <azydev/embedded/dma/common/entity.h>
 
-#include <stdint.h>
+#include <azydev/embedded/dma/common/transfer.h>
 
-class CDMANodePacket;
+#include <stdint.h>
 
 class CDMAChannel : public IDMAEntity
 {
@@ -46,7 +46,8 @@ public:
     // NVI
     virtual uint8_t GetId() volatile const final;
     virtual void SetConfig(const CONFIG_DESC&) final;
-    virtual RESULT StartTransfer(const TRANSFER_DESC&, ITransferControl**) final;
+    virtual RESULT
+    StartTransfer(CDMATransfer&, const CDMATransfer::CONFIG_DESC&, ITransferControl**) final;
     virtual bool IsTransferInProgress() volatile const final;
 
 protected:
@@ -63,12 +64,12 @@ private:
 
     // member variables
     uint8_t const m_id;
-    volatile bool m_transfer_in_progress;
-    volatile uint8_t m_transfer_id_current;
-    volatile OnTransferEnded m_callback_transfer_ended;
+    volatile CDMATransfer* m_transfer_current;
+    OnTransferEnded m_callback_transfer_ended;
 
     // abstract
-    virtual void SetConfig_impl(const CONFIG_DESC&)                           = 0;
-    virtual void StartTransfer_impl(const TRANSFER_DESC&, ITransferControl**) = 0;
-    virtual void MarkTransferEnded_impl(const RESULT)                         = 0;
+    virtual void SetConfig_impl(const CONFIG_DESC&) = 0;
+    virtual void
+    StartTransfer_impl(CDMATransfer&, const CDMATransfer::CONFIG_DESC&, ITransferControl**) = 0;
+    virtual void MarkTransferEnded_impl(const RESULT)                                       = 0;
 };

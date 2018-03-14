@@ -22,6 +22,8 @@
 
 #include <azydev/embedded/dma/common/channel.h>
 
+#include <azydev/embedded/dma/common/transfer.h>
+
 /* PUBLIC */
 
 // destructor
@@ -39,13 +41,14 @@ void CDMAChannel::SetConfig(const CONFIG_DESC& config) {
     SetConfig_impl(config);
 }
 
-IDMAEntity::RESULT
-CDMAChannel::StartTransfer(const TRANSFER_DESC& transfer, ITransferControl** transferControl) {
+IDMAEntity::RESULT CDMAChannel::StartTransfer(
+    CDMATransfer& transfer,
+    const CDMATransfer::CONFIG_DESC& transferConfig,
+    ITransferControl** transferControl) {
     if (!IsTransferInProgress()) {
-        m_transfer_in_progress    = true;
-        m_transfer_id_current     = transfer.id;
-        m_callback_transfer_ended = transfer.callback_transfer_ended;
-        StartTransfer_impl(transfer, transferControl);
+        m_transfer_current = &transfer;
+        // m_callback_transfer_ended = transfer.callback_transfer_ended;
+        StartTransfer_impl(transfer, transferConfig, transferControl);
         return RESULT::SUCCESS;
     } else {
         return RESULT::FAIL_BUSY;
@@ -53,7 +56,7 @@ CDMAChannel::StartTransfer(const TRANSFER_DESC& transfer, ITransferControl** tra
 }
 
 bool CDMAChannel::IsTransferInProgress() volatile const {
-    return m_transfer_in_progress;
+    return m_transfer_current != nullptr;
 }
 
 /* PROTECTED */
@@ -63,8 +66,7 @@ bool CDMAChannel::IsTransferInProgress() volatile const {
 CDMAChannel::CDMAChannel(const DESC& desc)
     : IDMAEntity()
     , m_id(desc.id)
-    , m_transfer_in_progress(false)
-    , m_transfer_id_current(255)
+    , m_transfer_current(nullptr)
     , m_callback_transfer_ended(nullptr) {
 }
 
@@ -73,7 +75,8 @@ CDMAChannel::CDMAChannel(const DESC& desc)
 void CDMAChannel::MarkTransferEnded(const RESULT result) {
     MarkTransferEnded_impl(result);
     if (m_callback_transfer_ended != nullptr) {
-        m_callback_transfer_ended(m_transfer_id_current, result);
+        uint8_t id = m_transfer_current->GetId();
+        m_callback_transfer_ended(id, result);
     }
-    m_transfer_in_progress = false;
+    m_transfer_current = nullptr;
 }

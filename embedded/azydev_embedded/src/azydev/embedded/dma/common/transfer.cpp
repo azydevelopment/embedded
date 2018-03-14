@@ -20,42 +20,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-#pragma once
+#include <azydev/embedded/dma/common/transfer.h>
 
-#include <stdint.h>
+/* PUBLIC */
 
-class IDMANode;
+// constructor
 
-class IDMAEntity
-{
-public:
-    class ITransferControl
-    {
-    public:
-        virtual bool IsTransferInProgress() const = 0;
-        virtual bool IsPendingTrigger() const     = 0;
-        virtual void TriggerTransferStep()        = 0;
-    };
+CDMATransfer::CDMATransfer(const DESC& desc)
+    : IDMAEntity()
+    , m_id(desc.id_initial)
+    , m_num_beats(0) {
+}
 
-    enum class RESULT : uint8_t
-    {
-        SUCCESS,
-        FAIL_ERROR,
-        FAIL_BUSY,
-        UNDEFINED = 255
-    };
+// destructor
 
-    typedef void (*OnTransferEnded)(const uint8_t transferId, const RESULT);
+CDMATransfer::~CDMATransfer() {
+}
 
-    // destructor
-    virtual ~IDMAEntity(){};
+// NVI
 
-protected:
-    // constructor
-    IDMAEntity(){};
+uint8_t CDMATransfer::GetId() volatile const {
+    return m_id;
+}
 
-private:
-    // rule of three
-    IDMAEntity(const IDMAEntity&);
-    IDMAEntity& operator=(const IDMAEntity&);
-};
+void CDMATransfer::Reset(const uint8_t id) {
+    Reset_impl();
+    m_id        = id;
+    m_num_beats = 0;
+}
+
+IDMAEntity::RESULT CDMATransfer::AddStep(const STEP_DESC& step) {
+    m_num_beats += step.num_beats;
+    return AddStep_impl(step);
+}
+
+uint32_t CDMATransfer::GetNumBeats() const {
+    return m_num_beats;
+}

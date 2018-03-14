@@ -22,40 +22,52 @@
 
 #pragma once
 
+#include <azydev/embedded/dma/common/entity.h>
+
 #include <stdint.h>
 
-class IDMANode;
-
-class IDMAEntity
+class CDMATransfer : public IDMAEntity
 {
 public:
-    class ITransferControl
+    struct STEP_DESC
     {
-    public:
-        virtual bool IsTransferInProgress() const = 0;
-        virtual bool IsPendingTrigger() const     = 0;
-        virtual void TriggerTransferStep()        = 0;
+        uint32_t num_beats         = 0;
+        IDMANode* node_source      = nullptr;
+        IDMANode* node_destination = nullptr;
     };
 
-    enum class RESULT : uint8_t
+    struct CONFIG_DESC
     {
-        SUCCESS,
-        FAIL_ERROR,
-        FAIL_BUSY,
-        UNDEFINED = 255
     };
 
-    typedef void (*OnTransferEnded)(const uint8_t transferId, const RESULT);
+    struct DESC
+    {
+        uint8_t id_initial = 0;
+    };
 
     // destructor
-    virtual ~IDMAEntity(){};
+    virtual ~CDMATransfer();
+
+    // NVI
+    virtual uint8_t GetId() volatile const final;
+    virtual void Reset(const uint8_t id) final;
+    virtual RESULT AddStep(const STEP_DESC&) final;
+    virtual uint32_t GetNumBeats() const final;
 
 protected:
     // constructor
-    IDMAEntity(){};
+    CDMATransfer(const DESC&);
 
 private:
     // rule of three
-    IDMAEntity(const IDMAEntity&);
-    IDMAEntity& operator=(const IDMAEntity&);
+    CDMATransfer(const CDMATransfer&);
+    CDMATransfer& operator=(const CDMATransfer&);
+
+    // member variables
+    uint8_t m_id;
+    uint32_t m_num_beats;
+
+    // abstract
+    virtual void Reset_impl()                     = 0;
+    virtual RESULT AddStep_impl(const STEP_DESC&) = 0;
 };

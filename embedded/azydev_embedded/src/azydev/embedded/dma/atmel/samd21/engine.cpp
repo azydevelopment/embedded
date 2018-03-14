@@ -29,8 +29,8 @@
 // TODO HACK: Hardcoded number of channels
 
 const uint8_t NUM_CHANNELS = 1;
-static CDMAChannelAtmelSAMD21::DESCRIPTOR fs_descriptors[NUM_CHANNELS];
-static CDMAChannelAtmelSAMD21::DESCRIPTOR fs_descriptors_writeback[NUM_CHANNELS];
+static CDMATransferAtmelSAMD21::DESCRIPTOR fs_descriptors[NUM_CHANNELS];
+static CDMATransferAtmelSAMD21::DESCRIPTOR fs_descriptors_writeback[NUM_CHANNELS];
 
 /* STATICS */
 
@@ -43,7 +43,6 @@ CDMAEngineAtmelSAMD21* CDMAEngineAtmelSAMD21::s_dma_engine = nullptr;
 CDMAEngineAtmelSAMD21::CDMAEngineAtmelSAMD21(const DESC& desc)
     : CDMAEngine(desc)
     , m_num_channels(NUM_CHANNELS)
-    , m_config({})
     , m_channels(nullptr) {
     // create space for the channel object pointers
     m_channels = new CDMAChannel*[GetNumChannels()];
@@ -107,7 +106,7 @@ CDMAChannelAtmelSAMD21& CDMAEngineAtmelSAMD21::GetChannel(const uint8_t channelI
 }
 
 void CDMAEngineAtmelSAMD21::SetEnablePriority(
-    const CDMAChannelAtmelSAMD21::PRIORITY priority,
+    const CDMATransferAtmelSAMD21::PRIORITY priority,
     const bool enabled) {
     uint8_t regOffset = static_cast<uint8_t>(REG_CTRL::LVLENX);
     if (enabled) {
@@ -118,10 +117,6 @@ void CDMAEngineAtmelSAMD21::SetEnablePriority(
 }
 
 // CDMAEngine
-
-void CDMAEngineAtmelSAMD21::SetConfig_impl(const CDMAEngine::CONFIG_DESC& config) {
-    m_config = static_cast<const CDMAEngineAtmelSAMD21::CONFIG_DESC&>(config);
-}
 
 void CDMAEngineAtmelSAMD21::SetEnabled_impl(const bool enabled) {
     // enter critsec
@@ -139,7 +134,7 @@ void CDMAEngineAtmelSAMD21::SetEnabled_impl(const bool enabled) {
 
     // enable priority level 0
     // TODO IMPLEMENT: Usage of other priorities
-    SetEnablePriority(CDMAChannelAtmelSAMD21::PRIORITY::LVL_0, true);
+    SetEnablePriority(CDMATransferAtmelSAMD21::PRIORITY::LVL_0, true);
 
     // enable the DMA module
     DMAC->CTRL.reg |= 1 << static_cast<uint8_t>(REG_CTRL::DMAENABLE);

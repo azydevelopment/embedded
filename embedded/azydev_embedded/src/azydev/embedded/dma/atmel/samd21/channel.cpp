@@ -32,7 +32,7 @@ CDMAChannelAtmelSAMD21::CDMAChannelAtmelSAMD21(const DESC& desc)
     : CDMAChannel(desc)
     , m_descriptor(desc.descriptor)
     , m_config({})
-    , m_trigger_action(TRIGGER_ACTION::UNDEFINED)
+    , m_trigger_action(CDMATransferAtmelSAMD21::TRIGGER_ACTION::UNDEFINED)
     , m_num_beats_remaining(0) {
 }
 
@@ -71,11 +71,11 @@ bool CDMAChannelAtmelSAMD21::IsPendingTrigger() const {
 
     if (IsTransferInProgress() && m_num_beats_remaining != 0) {
         switch (m_trigger_action) {
-        case TRIGGER_ACTION::START_BEAT:
+        case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_BEAT:
             pendingTrigger = (DMAC->PENDCH.reg & (1 << GetId())) == 0;
             break;
-        case TRIGGER_ACTION::START_BLOCK:
-        case TRIGGER_ACTION::START_TRANSACTION:
+        case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_BLOCK:
+        case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_TRANSACTION:
             pendingTrigger = true;
             break;
         default:
@@ -88,12 +88,12 @@ bool CDMAChannelAtmelSAMD21::IsPendingTrigger() const {
 
 void CDMAChannelAtmelSAMD21::TriggerTransferStep() {
     switch (m_trigger_action) {
-    case TRIGGER_ACTION::START_BEAT:
+    case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_BEAT:
         DMAC->SWTRIGCTRL.reg |= 1 << GetId();
         m_num_beats_remaining--;
         break;
-    case TRIGGER_ACTION::START_BLOCK:
-    case TRIGGER_ACTION::START_TRANSACTION:
+    case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_BLOCK:
+    case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_TRANSACTION:
         DMAC->SWTRIGCTRL.reg |= 1 << GetId();
         m_num_beats_remaining = 0; // all beats will be triggered by this
         break;
@@ -123,13 +123,14 @@ void CDMAChannelAtmelSAMD21::SetConfig_impl(const CDMAChannel::CONFIG_DESC& conf
 }
 
 void CDMAChannelAtmelSAMD21::StartTransfer_impl(
-    const IDMAEntity::TRANSFER_DESC& transfer,
+    CDMATransfer& transfer,
+    const CDMATransfer::CONFIG_DESC& transferConfig,
     IDMAEntity::ITransferControl** transferControl) {
-    const CDMAChannelAtmelSAMD21::TRANSFER_DESC& transferSAMD21 =
-        static_cast<const CDMAChannelAtmelSAMD21::TRANSFER_DESC&>(transfer);
+    const CDMATransferAtmelSAMD21& transferSAMD21 =
+        static_cast<const CDMATransferAtmelSAMD21&>(transfer);
 
-    IDMANode& nodeSrc  = *(transferSAMD21.node_source);
-    IDMANode& nodeDest = *(transferSAMD21.node_destination);
+    const CDMATransferAtmelSAMD21::CONFIG_DESC& transferConfigSAMD21 =
+        static_cast<const CDMATransferAtmelSAMD21::CONFIG_DESC&>(transferConfig);
 
     // TODO IMPLEMENT: transferSAMD21.callback_on_complete
 
@@ -147,81 +148,36 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(
         DMAC->SWTRIGCTRL.reg &= ~(1 << channelId);
 
         // store the trigger action and num beats to determine when the channel is pending
-        m_trigger_action      = transferSAMD21.trigger_action;
-        m_num_beats_remaining = transferSAMD21.num_beats;
+        m_trigger_action      = transferConfigSAMD21.trigger_action;
+        m_num_beats_remaining = transferSAMD21.GetNumBeats();
 
         // write the channel config for this transfer
         {
-            uint32_t chctrlb = static_cast<uint8_t>(transferSAMD21.event_input_action)
+            uint32_t chctrlb = static_cast<uint8_t>(transferConfigSAMD21.event_input_action)
                                    << static_cast<uint8_t>(REG_CHCTRLB::EVACT)
-                               | static_cast<uint8_t>(transferSAMD21.enable_event_input)
+                               | static_cast<uint8_t>(transferConfigSAMD21.enable_event_input)
                                      << static_cast<uint8_t>(REG_CHCTRLB::EVIE)
-                               | static_cast<uint8_t>(transferSAMD21.enable_event_output)
+                               | static_cast<uint8_t>(transferConfigSAMD21.enable_event_output)
                                      << static_cast<uint8_t>(REG_CHCTRLB::EVOE)
-                               | static_cast<uint8_t>(transferSAMD21.priority)
+                               | static_cast<uint8_t>(transferConfigSAMD21.priority)
                                      << static_cast<uint8_t>(REG_CHCTRLB::LVL)
-                               | static_cast<uint8_t>(transferSAMD21.trigger)
+                               | static_cast<uint8_t>(transferConfigSAMD21.trigger)
                                      << static_cast<uint8_t>(REG_CHCTRLB::TRIGSRC)
-                               | static_cast<uint8_t>(transferSAMD21.trigger_action)
+                               | static_cast<uint8_t>(transferConfigSAMD21.trigger_action)
                                      << static_cast<uint8_t>(REG_CHCTRLB::TRIGACT);
 
             // write the config to the control register
             DMAC->CHCTRLB.reg = chctrlb;
         }
 
-        // write the descriptor for this transfer
-        {
-            // calculate source data address
-            uint32_t addressSrc = 0;
-            {
-                uint32_t offset = 0;
-                if (nodeSrc.IsIncrementing()) {
-                    offset =
-                        GetNumBeatsRemaining() * static_cast<uint8_t>(nodeSrc.GetPrimitiveType());
-                }
-
-                addressSrc = nodeSrc.GetAddress() + offset;
-            }
-
-            // calculate source data destination
-            uint32_t addressDest = 0;
-            {
-                uint32_t offset = 0;
-                if (nodeDest.IsIncrementing()) {
-                    offset =
-                        GetNumBeatsRemaining() * static_cast<uint8_t>(nodeDest.GetPrimitiveType());
-                }
-
-                addressDest = nodeDest.GetAddress() + offset;
-            }
-
-            m_descriptor->btctrl.bits.valid = true;
-            m_descriptor->btctrl.bits.evosel =
-                static_cast<uint8_t>(transferSAMD21.event_output_selection);
-            m_descriptor->btctrl.bits.blockact =
-                static_cast<uint8_t>(transferSAMD21.block_completed_action);
-            m_descriptor->btctrl.bits.beatsize = static_cast<uint8_t>(transferSAMD21.beat_size);
-            m_descriptor->btctrl.bits.srcinc   = static_cast<uint8_t>(nodeSrc.IsIncrementing());
-            m_descriptor->btctrl.bits.dstinc   = static_cast<uint8_t>(nodeDest.IsIncrementing());
-            m_descriptor->btctrl.bits.stepsel =
-                static_cast<uint8_t>(transferSAMD21.step_size_select);
-            m_descriptor->btctrl.bits.stepsize    = static_cast<uint8_t>(transferSAMD21.step_size);
-            m_descriptor->num_beats               = GetNumBeatsRemaining();
-            m_descriptor->source_address          = addressSrc;
-            m_descriptor->destination_address     = addressDest;
-            m_descriptor->next_descriptor_address = 0;
-
-            // TODO IMPLEMENT: Linked descriptors
-        }
+        // populate the base descriptor for this transfer
+        *m_descriptor = transferSAMD21.GetBaseDescriptor();
 
         // enable/disable interrupts
         {
-            // always enable the transfer complete interrupt flags
+            // always enable the transfer complete and transfer error interrupt flags
             SetEnableInterrupt(INTERRUPT::ON_TRANSFER_COMPLETE, true);
-
-            // optionally enable the transfer error and suspend interrupt flags
-            SetEnableInterrupt(
-                INTERRUPT::ON_TRANSFER_ERROR, transferSAMD21.enable_interrupt_transfer_error);
+            SetEnableInterrupt(INTERRUPT::ON_TRANSFER_ERROR, true);
             // SetEnableInterrupt(
             // INTERRUPT::ON_SUSPEND, transferSAMD21.enable_interrupt_channel_suspend);
         }
