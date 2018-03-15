@@ -125,7 +125,7 @@ void CDMAChannelAtmelSAMD21::SetConfig_impl(const CDMAChannel::CONFIG_DESC& conf
 void CDMAChannelAtmelSAMD21::StartTransfer_impl(
     CDMATransfer& transfer,
     const CDMATransfer::CONFIG_DESC& transferConfig,
-    IDMAEntity::ITransferControl** transferControl) {
+    CDMATransfer::ITransferControl** transferControl) {
     const CDMATransferAtmelSAMD21& transferSAMD21 =
         static_cast<const CDMATransferAtmelSAMD21&>(transfer);
 

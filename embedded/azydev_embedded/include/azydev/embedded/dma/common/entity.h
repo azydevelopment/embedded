@@ -29,14 +29,6 @@ class IDMANode;
 class IDMAEntity
 {
 public:
-    class ITransferControl
-    {
-    public:
-        virtual bool IsTransferInProgress() const = 0;
-        virtual bool IsPendingTrigger() const     = 0;
-        virtual void TriggerTransferStep()        = 0;
-    };
-
     enum class RESULT : uint8_t
     {
         SUCCESS,

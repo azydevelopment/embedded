@@ -45,7 +45,7 @@ public:
     virtual RESULT StartTransfer(
         CDMATransfer&,
         const CDMATransfer::CONFIG_DESC&,
-        ITransferControl** = nullptr) final;
+        CDMATransfer::ITransferControl** = nullptr) final;
 
 protected:
     // constructor

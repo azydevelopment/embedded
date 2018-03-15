@@ -46,8 +46,10 @@ public:
     // NVI
     virtual uint8_t GetId() volatile const final;
     virtual void SetConfig(const CONFIG_DESC&) final;
-    virtual RESULT
-    StartTransfer(CDMATransfer&, const CDMATransfer::CONFIG_DESC&, ITransferControl**) final;
+    virtual RESULT StartTransfer(
+        CDMATransfer&,
+        const CDMATransfer::CONFIG_DESC&,
+        CDMATransfer::ITransferControl**) final;
     virtual bool IsTransferInProgress() volatile const final;
 
 protected:
@@ -65,11 +67,13 @@ private:
     // member variables
     uint8_t const m_id;
     volatile CDMATransfer* m_transfer_current;
-    OnTransferEnded m_callback_transfer_ended;
+    OnTransferEnded m_callback_on_transfer_ended;
 
     // abstract
     virtual void SetConfig_impl(const CONFIG_DESC&) = 0;
-    virtual void
-    StartTransfer_impl(CDMATransfer&, const CDMATransfer::CONFIG_DESC&, ITransferControl**) = 0;
-    virtual void MarkTransferEnded_impl(const RESULT)                                       = 0;
+    virtual void StartTransfer_impl(
+        CDMATransfer&,
+        const CDMATransfer::CONFIG_DESC&,
+        CDMATransfer::ITransferControl**)             = 0;
+    virtual void MarkTransferEnded_impl(const RESULT) = 0;
 };

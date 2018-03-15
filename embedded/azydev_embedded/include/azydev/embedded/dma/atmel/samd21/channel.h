@@ -31,7 +31,7 @@
 
 class CDMATransfer;
 
-class CDMAChannelAtmelSAMD21 final : public CDMAChannel, public IDMAEntity::ITransferControl
+class CDMAChannelAtmelSAMD21 final : public CDMAChannel, public CDMATransfer::ITransferControl
 {
 public:
     enum class COMMAND : uint8_t
@@ -109,6 +109,6 @@ private:
     virtual void StartTransfer_impl(
         CDMATransfer&,
         const CDMATransfer::CONFIG_DESC&,
-        IDMAEntity::ITransferControl**) override final;
+        CDMATransfer::ITransferControl**) override final;
     virtual void MarkTransferEnded_impl(const RESULT) override final;
 };

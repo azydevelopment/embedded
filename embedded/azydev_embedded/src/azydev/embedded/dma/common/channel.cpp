@@ -44,10 +44,10 @@ void CDMAChannel::SetConfig(const CONFIG_DESC& config) {
 IDMAEntity::RESULT CDMAChannel::StartTransfer(
     CDMATransfer& transfer,
     const CDMATransfer::CONFIG_DESC& transferConfig,
-    ITransferControl** transferControl) {
+    CDMATransfer::ITransferControl** transferControl) {
     if (!IsTransferInProgress()) {
-        m_transfer_current = &transfer;
-        // m_callback_transfer_ended = transfer.callback_transfer_ended;
+        m_transfer_current           = &transfer;
+        m_callback_on_transfer_ended = transferConfig.callback_on_transfer_ended;
         StartTransfer_impl(transfer, transferConfig, transferControl);
         return RESULT::SUCCESS;
     } else {
@@ -67,16 +67,16 @@ CDMAChannel::CDMAChannel(const DESC& desc)
     : IDMAEntity()
     , m_id(desc.id)
     , m_transfer_current(nullptr)
-    , m_callback_transfer_ended(nullptr) {
+    , m_callback_on_transfer_ended(nullptr) {
 }
 
 // member functions
 
 void CDMAChannel::MarkTransferEnded(const RESULT result) {
     MarkTransferEnded_impl(result);
-    if (m_callback_transfer_ended != nullptr) {
+    if (m_callback_on_transfer_ended != nullptr) {
         uint8_t id = m_transfer_current->GetId();
-        m_callback_transfer_ended(id, result);
+        m_callback_on_transfer_ended(id, result);
     }
     m_transfer_current = nullptr;
 }

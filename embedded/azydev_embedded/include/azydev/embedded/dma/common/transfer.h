@@ -29,6 +29,14 @@
 class CDMATransfer : public IDMAEntity
 {
 public:
+    class ITransferControl
+    {
+    public:
+        virtual bool IsTransferInProgress() const = 0;
+        virtual bool IsPendingTrigger() const     = 0;
+        virtual void TriggerTransferStep()        = 0;
+    };
+
     struct STEP_DESC
     {
         uint32_t num_beats         = 0;
@@ -38,6 +46,7 @@ public:
 
     struct CONFIG_DESC
     {
+        OnTransferEnded callback_on_transfer_ended = nullptr;
     };
 
     struct DESC

@@ -41,7 +41,7 @@ void CDMAEngine::SetEnabled(const bool enabled) {
 CDMAEngine::RESULT CDMAEngine::StartTransfer(
     CDMATransfer& transfer,
     const CDMATransfer::CONFIG_DESC& transferConfig,
-    ITransferControl** transferControl) {
+    CDMATransfer::ITransferControl** transferControl) {
     RESULT result = RESULT::UNDEFINED;
 
     CDMAChannel* channel = AcquireFreeChannel_impl();
