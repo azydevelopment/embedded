@@ -77,8 +77,8 @@ IDMAEntity::RESULT CDMATransferAtmelSAMD21::AddStep_impl(const CDMATransfer::STE
     if (GetCurrentStep() >= GetNumStepsMax()) {
         result = IDMAEntity::RESULT::FAIL_ERROR;
     } else {
-        IDMANode* nodeSrc = step.node_source;
-        IDMANode* nodeDst = step.node_destination;
+        CDMANode* nodeSrc = step.node_source;
+        CDMANode* nodeDst = step.node_destination;
 
         // calculate source data address
         uint32_t addressSrc = 0;

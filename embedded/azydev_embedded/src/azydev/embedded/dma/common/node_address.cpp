@@ -27,7 +27,7 @@
 // constructor
 
 CDMANodeAddress::CDMANodeAddress(const DESC& desc)
-    : IDMANode(desc)
+    : CDMANode(desc)
     , m_address(desc.address) {
 }
 
@@ -38,7 +38,7 @@ CDMANodeAddress::~CDMANodeAddress() {
 
 /* PRIVATE */
 
-// IDMANode
+// CDMANode
 
 uint32_t CDMANodeAddress::GetAddress_impl() const {
     return m_address;

@@ -30,7 +30,7 @@
 
 class CPinsAtmelSAMD21;
 class CDMAEngine;
-class CDMANodePacket;
+class CDMANode;
 
 class CSPIBusAtmelSAMD21 final : public CSPIBus<uint16_t>
 {
@@ -100,9 +100,10 @@ public:
         bool enable_interrupt_data_register_empty   = false;
 
         // DMA
-        bool is_dma_driven         = false;
-        CDMAEngine* dma_engine     = nullptr;
-        CDMANodePacket* dma_packet = nullptr;
+        bool is_dma_driven      = false;
+        CDMAEngine* dma_engine  = nullptr;
+        CDMANode* dma_node_src  = nullptr;
+        CDMANode* dma_node_dest = nullptr;
     };
 
     struct PIN_CONFIG_DESC
@@ -129,7 +130,6 @@ public:
 
 protected:
     bool IsDMADriven() const;
-    CDMANodePacket& GetDMAPacket() const;
 
     // CSPIBus
     virtual bool IsImmediate() const override final;

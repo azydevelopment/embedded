@@ -27,7 +27,7 @@
 // constructor
 
 CDMANodePacket::CDMANodePacket(const DESC& desc)
-    : IDMANode(desc)
+    : CDMANode(desc)
     , m_packet_type(PACKET_TYPE::WRITE)
     , m_num_beats_max(desc.num_beats_max)
     , m_num_beats(0)
@@ -105,7 +105,7 @@ void CDMANodePacket::PrepareForRead(const uint32_t numBeats) {
 
 /* PRIVATE */
 
-// IDMANode
+// CDMANode
 
 uint32_t CDMANodePacket::GetAddress_impl() const {
     uint32_t address = 0;

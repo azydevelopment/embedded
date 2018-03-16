@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 
-class IDMANode;
+class CDMANode;
 
 class IDMAEntity
 {

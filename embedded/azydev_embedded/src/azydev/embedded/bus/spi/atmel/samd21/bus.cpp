@@ -49,10 +49,6 @@ bool CSPIBusAtmelSAMD21::IsDMADriven() const {
     return m_bus_config.is_dma_driven;
 }
 
-CDMANodePacket& CSPIBusAtmelSAMD21::GetDMAPacket() const {
-    return *(m_bus_config.dma_packet);
-}
-
 // CSPIBus
 
 bool CSPIBusAtmelSAMD21::IsImmediate() const {
@@ -251,7 +247,7 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::Read_impl(uint16_t& outData) {
 CSPIEntity::STATUS CSPIBusAtmelSAMD21::Write_impl(const uint16_t data) {
     STATUS result = STATUS::UNDEFINED;
     if (IsDMADriven()) {
-        GetDMAPacket().Write(data);
+        // GetDMAPacket().Write(data);
     } else {
         switch (m_bus_config.character_size) {
         case CHARACTER_SIZE::BITS_8:

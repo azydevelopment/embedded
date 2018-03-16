@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 
-class CDMANodePacket final : public IDMANode
+class CDMANodePacket final : public CDMANode
 {
 public:
     enum class PACKET_TYPE
@@ -47,7 +47,7 @@ public:
         PACKET_TYPE packet_type = PACKET_TYPE::WRITE;
     };
 
-    struct DESC : IDMANode::DESC
+    struct DESC : CDMANode::DESC
     {
         uint32_t num_beats_max = 0;
     };
@@ -78,6 +78,6 @@ private:
     uint32_t m_num_beats;
     DATA m_data;
 
-    // IDMANode
+    // CDMANode
     virtual uint32_t GetAddress_impl() const override final;
 };

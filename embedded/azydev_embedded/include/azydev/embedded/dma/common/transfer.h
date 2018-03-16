@@ -40,8 +40,8 @@ public:
     struct STEP_DESC
     {
         uint32_t num_beats         = 0;
-        IDMANode* node_source      = nullptr;
-        IDMANode* node_destination = nullptr;
+        CDMANode* node_source      = nullptr;
+        CDMANode* node_destination = nullptr;
     };
 
     struct CONFIG_DESC

@@ -26,10 +26,10 @@
 
 #include <stdint.h>
 
-class CDMANodeAddress final : public IDMANode
+class CDMANodeAddress final : public CDMANode
 {
 public:
-    struct DESC : IDMANode::DESC
+    struct DESC : CDMANode::DESC
     {
         uint32_t address;
     };
@@ -48,6 +48,6 @@ private:
     // member variables
     const uint32_t m_address;
 
-    // IDMANode
+    // CDMANode
     virtual uint32_t GetAddress_impl() const override final;
 };
