@@ -28,8 +28,10 @@
 
 #include <stdint.h>
 
+template<typename BEAT_PRIMITIVE>
 class CDMAChannel;
 
+template<typename BEAT_PRIMITIVE>
 class CDMAEngine : public IDMAEntity
 {
 public:
@@ -43,9 +45,9 @@ public:
     // NVI
     virtual void SetEnabled(const bool) final;
     virtual RESULT StartTransfer(
-        CDMATransfer&,
-        const CDMATransfer::CONFIG_DESC&,
-        CDMATransfer::ITransferControl** = nullptr) final;
+        CDMATransfer<BEAT_PRIMITIVE>&,
+        const typename CDMATransfer<BEAT_PRIMITIVE>::CONFIG_DESC&,
+        typename CDMATransfer<BEAT_PRIMITIVE>::ITransferControl** = nullptr) final;
 
 protected:
     // constructor
@@ -58,5 +60,9 @@ private:
 
     // abstract
     virtual void SetEnabled_impl(const bool)       = 0;
-    virtual CDMAChannel* AcquireFreeChannel_impl() = 0;
+    virtual CDMAChannel<BEAT_PRIMITIVE>* AcquireFreeChannel_impl() = 0;
 };
+
+/* FORWARD DECLARED TEMPLATES */
+template class CDMAEngine<uint8_t>;
+template class CDMAEngine<uint16_t>;

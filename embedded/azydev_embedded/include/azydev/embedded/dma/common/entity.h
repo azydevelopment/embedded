@@ -24,8 +24,6 @@
 
 #include <stdint.h>
 
-class CDMANode;
-
 class IDMAEntity
 {
 public:

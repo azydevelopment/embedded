@@ -26,78 +26,52 @@
 
 // constructor
 
-CDMANodePacket::CDMANodePacket(const DESC& desc)
-    : CDMANode(desc)
+template<typename BEAT_PRIMITIVE>
+CDMANodePacket<BEAT_PRIMITIVE>::CDMANodePacket(const DESC& desc)
+    : CDMANode<BEAT_PRIMITIVE>(desc)
     , m_packet_type(PACKET_TYPE::WRITE)
     , m_num_beats_max(desc.num_beats_max)
     , m_num_beats(0)
-    , m_data({}) {
-    switch (GetPrimitiveType()) {
-    case BEAT_PRIMITIVE::UINT8_T:
-        m_data.data_8bit = new uint8_t[m_num_beats_max];
-        break;
-    case BEAT_PRIMITIVE::UINT16_T:
-        m_data.data_16bit = new uint16_t[m_num_beats_max];
-        break;
-    case BEAT_PRIMITIVE::UINT32_T:
-        m_data.data_32bit = new uint32_t[m_num_beats_max];
-        break;
-    }
+    , m_data(nullptr) {
+    m_data = new BEAT_PRIMITIVE[m_num_beats_max];
 }
 
 // destructor
 
-CDMANodePacket::~CDMANodePacket() {
-    switch (GetPrimitiveType()) {
-    case BEAT_PRIMITIVE::UINT8_T:
-        delete[] m_data.data_8bit;
-        break;
-    case BEAT_PRIMITIVE::UINT16_T:
-        delete[] m_data.data_16bit;
-        break;
-    case BEAT_PRIMITIVE::UINT32_T:
-        delete[] m_data.data_32bit;
-        break;
-    }
+template<typename BEAT_PRIMITIVE>
+CDMANodePacket<BEAT_PRIMITIVE>::~CDMANodePacket() {
+    delete[] m_data;
 }
 
 // NVI
 
-void CDMANodePacket::Reset(const CONFIG_DESC& config) {
+template<typename BEAT_PRIMITIVE>
+void CDMANodePacket<BEAT_PRIMITIVE>::Reset(const CONFIG_DESC& config) {
     m_packet_type = config.packet_type;
     m_num_beats   = 0;
 }
 
-CDMANodePacket::PACKET_TYPE CDMANodePacket::GetPacketType() const {
+template<typename BEAT_PRIMITIVE>
+typename CDMANodePacket<BEAT_PRIMITIVE>::PACKET_TYPE
+CDMANodePacket<BEAT_PRIMITIVE>::GetPacketType() const {
     return m_packet_type;
 }
 
-uint32_t CDMANodePacket::GetNumBeatsMax() const {
+template<typename BEAT_PRIMITIVE>
+uint32_t CDMANodePacket<BEAT_PRIMITIVE>::GetNumBeatsMax() const {
     return m_num_beats_max;
 }
 
-void CDMANodePacket::Write(const uint8_t data) {
+template<typename BEAT_PRIMITIVE>
+void CDMANodePacket<BEAT_PRIMITIVE>::Write(const BEAT_PRIMITIVE data) {
     if (GetPacketType() == PACKET_TYPE::WRITE && m_num_beats < GetNumBeatsMax()) {
-        m_data.data_8bit[m_num_beats] = data;
+        m_data[m_num_beats] = data;
         m_num_beats++;
     }
 }
 
-void CDMANodePacket::Write(const uint16_t data) {
-    if (GetPacketType() == PACKET_TYPE::WRITE && m_num_beats < GetNumBeatsMax()) {
-        m_data.data_16bit[m_num_beats] = data;
-        m_num_beats++;
-    }
-}
-
-void CDMANodePacket::Write(const uint32_t data) {
-    if (GetPacketType() == PACKET_TYPE::WRITE && m_num_beats < GetNumBeatsMax()) {
-        m_data.data_32bit[m_num_beats] = data;
-        m_num_beats++;
-    }
-}
-
-void CDMANodePacket::PrepareForRead(const uint32_t numBeats) {
+template<typename BEAT_PRIMITIVE>
+void CDMANodePacket<BEAT_PRIMITIVE>::PrepareForRead(const uint32_t numBeats) {
     if (GetPacketType() == PACKET_TYPE::READ) {
         m_num_beats = numBeats;
     }
@@ -107,18 +81,7 @@ void CDMANodePacket::PrepareForRead(const uint32_t numBeats) {
 
 // CDMANode
 
-uint32_t CDMANodePacket::GetAddress_impl() const {
-    uint32_t address = 0;
-    switch (GetPrimitiveType()) {
-    case BEAT_PRIMITIVE::UINT8_T:
-        address = reinterpret_cast<uint32_t>(m_data.data_8bit);
-        break;
-    case BEAT_PRIMITIVE::UINT16_T:
-        address = reinterpret_cast<uint32_t>(m_data.data_16bit);
-        break;
-    case BEAT_PRIMITIVE::UINT32_T:
-        address = reinterpret_cast<uint32_t>(m_data.data_32bit);
-        break;
-    }
-    return address;
+template<typename BEAT_PRIMITIVE>
+uint32_t CDMANodePacket<BEAT_PRIMITIVE>::GetAddress_impl() const {
+    return reinterpret_cast<uint32_t>(m_data);
 }

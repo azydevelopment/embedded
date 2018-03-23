@@ -28,32 +28,35 @@
 
 // constructor
 
-CDMAChannelAtmelSAMD21::CDMAChannelAtmelSAMD21(const DESC& desc)
-    : CDMAChannel(desc)
+template<typename BEAT_PRIMITIVE>
+CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::CDMAChannelAtmelSAMD21(const DESC& desc)
+    : CDMAChannel<BEAT_PRIMITIVE>(desc)
     , m_descriptor(desc.descriptor)
     , m_config({})
-    , m_trigger_action(CDMATransferAtmelSAMD21::TRIGGER_ACTION::UNDEFINED)
+    , m_trigger_action(CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::TRIGGER_ACTION::UNDEFINED)
     , m_num_beats_remaining(0) {
 }
 
 // destructor
 
-CDMAChannelAtmelSAMD21::~CDMAChannelAtmelSAMD21() {
+template<typename BEAT_PRIMITIVE>
+CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::~CDMAChannelAtmelSAMD21() {
 }
 
 // ISR
 
-void CDMAChannelAtmelSAMD21::_ISR() {
+template<typename BEAT_PRIMITIVE>
+void CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::_ISR() {
     system_interrupt_enter_critical_section();
     {
         // clean up
         {
             if (DMAC->CHINTFLAG.reg
                 & (1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_COMPLETE))) {
-                MarkTransferEnded(RESULT::SUCCESS);
+                this->MarkTransferEnded(IDMAEntity::IDMAEntity::RESULT::SUCCESS);
             } else if (
                 DMAC->CHINTFLAG.reg & (1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_ERROR))) {
-                MarkTransferEnded(RESULT::FAIL_ERROR);
+                this->MarkTransferEnded(IDMAEntity::IDMAEntity::RESULT::FAIL_ERROR);
             }
         }
     }
@@ -62,20 +65,22 @@ void CDMAChannelAtmelSAMD21::_ISR() {
 
 // IDMAEntity::ITransferControl
 
-bool CDMAChannelAtmelSAMD21::IsTransferInProgress() const {
-    return CDMAChannel::IsTransferInProgress();
+template<typename BEAT_PRIMITIVE>
+bool CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::IsTransferInProgress() const {
+    return CDMAChannel<BEAT_PRIMITIVE>::IsTransferInProgress();
 }
 
-bool CDMAChannelAtmelSAMD21::IsPendingTrigger() const {
+template<typename BEAT_PRIMITIVE>
+bool CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::IsPendingTrigger() const {
     bool pendingTrigger = false;
 
     if (IsTransferInProgress() && m_num_beats_remaining != 0) {
         switch (m_trigger_action) {
-        case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_BEAT:
-            pendingTrigger = (DMAC->PENDCH.reg & (1 << GetId())) == 0;
+        case CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::TRIGGER_ACTION::START_BEAT:
+            pendingTrigger = (DMAC->PENDCH.reg & (1 << this->GetId())) == 0;
             break;
-        case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_BLOCK:
-        case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_TRANSACTION:
+        case CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::TRIGGER_ACTION::START_BLOCK:
+        case CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::TRIGGER_ACTION::START_TRANSACTION:
             pendingTrigger = true;
             break;
         default:
@@ -86,15 +91,16 @@ bool CDMAChannelAtmelSAMD21::IsPendingTrigger() const {
     return pendingTrigger;
 }
 
-void CDMAChannelAtmelSAMD21::TriggerTransferStep() {
+template<typename BEAT_PRIMITIVE>
+void CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::TriggerTransferStep() {
     switch (m_trigger_action) {
-    case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_BEAT:
-        DMAC->SWTRIGCTRL.reg |= 1 << GetId();
+    case CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::TRIGGER_ACTION::START_BEAT:
+        DMAC->SWTRIGCTRL.reg |= 1 << this->GetId();
         m_num_beats_remaining--;
         break;
-    case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_BLOCK:
-    case CDMATransferAtmelSAMD21::TRIGGER_ACTION::START_TRANSACTION:
-        DMAC->SWTRIGCTRL.reg |= 1 << GetId();
+    case CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::TRIGGER_ACTION::START_BLOCK:
+    case CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::TRIGGER_ACTION::START_TRANSACTION:
+        DMAC->SWTRIGCTRL.reg |= 1 << this->GetId();
         m_num_beats_remaining = 0; // all beats will be triggered by this
         break;
     default:
@@ -106,11 +112,15 @@ void CDMAChannelAtmelSAMD21::TriggerTransferStep() {
 
 // member functions
 
-uint16_t CDMAChannelAtmelSAMD21::GetNumBeatsRemaining() const {
+template<typename BEAT_PRIMITIVE>
+uint16_t CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::GetNumBeatsRemaining() const {
     return m_num_beats_remaining;
 }
 
-void CDMAChannelAtmelSAMD21::SetEnableInterrupt(const INTERRUPT interrupt, const bool enabled) {
+template<typename BEAT_PRIMITIVE>
+void CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::SetEnableInterrupt(
+    const INTERRUPT interrupt,
+    const bool enabled) {
     volatile uint8_t& reg = enabled ? DMAC->CHINTENSET.reg : DMAC->CHINTENCLR.reg;
     uint8_t regOffset     = static_cast<uint8_t>(interrupt);
     reg                   = 1 << regOffset;
@@ -118,26 +128,31 @@ void CDMAChannelAtmelSAMD21::SetEnableInterrupt(const INTERRUPT interrupt, const
 
 // CDMAChannel
 
-void CDMAChannelAtmelSAMD21::SetConfig_impl(const CDMAChannel::CONFIG_DESC& config) {
-    m_config = static_cast<const CDMAChannelAtmelSAMD21::CONFIG_DESC&>(config);
+template<typename BEAT_PRIMITIVE>
+void CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::SetConfig_impl(
+    const typename CDMAChannel<BEAT_PRIMITIVE>::CONFIG_DESC& config) {
+    m_config =
+        static_cast<const typename CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::CONFIG_DESC&>(config);
 }
 
-void CDMAChannelAtmelSAMD21::StartTransfer_impl(
-    CDMATransfer& transfer,
-    const CDMATransfer::CONFIG_DESC& transferConfig,
-    CDMATransfer::ITransferControl** transferControl) {
-    const CDMATransferAtmelSAMD21& transferSAMD21 =
-        static_cast<const CDMATransferAtmelSAMD21&>(transfer);
+template<typename BEAT_PRIMITIVE>
+void CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::StartTransfer_impl(
+    CDMATransfer<BEAT_PRIMITIVE>& transfer,
+    const typename CDMATransfer<BEAT_PRIMITIVE>::CONFIG_DESC& transferConfig,
+    typename CDMATransfer<BEAT_PRIMITIVE>::ITransferControl** transferControl) {
+    const CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>& transferSAMD21 =
+        static_cast<const CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>&>(transfer);
 
-    const CDMATransferAtmelSAMD21::CONFIG_DESC& transferConfigSAMD21 =
-        static_cast<const CDMATransferAtmelSAMD21::CONFIG_DESC&>(transferConfig);
+    const typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::CONFIG_DESC& transferConfigSAMD21 =
+        static_cast<const typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::CONFIG_DESC&>(
+            transferConfig);
 
     // TODO IMPLEMENT: transferSAMD21.callback_on_complete
 
     system_interrupt_enter_critical_section();
     {
         // select the channel we'll be using
-        uint8_t channelId = GetId();
+        uint8_t channelId = this->GetId();
         DMAC->CHID.reg    = channelId;
 
         // enable and reset this channel
@@ -193,18 +208,20 @@ void CDMAChannelAtmelSAMD21::StartTransfer_impl(
     system_interrupt_leave_critical_section();
 }
 
-void CDMAChannelAtmelSAMD21::MarkTransferEnded_impl(const RESULT result) {
+template<typename BEAT_PRIMITIVE>
+void CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>::MarkTransferEnded_impl(
+    const IDMAEntity::RESULT result) {
     system_interrupt_enter_critical_section();
     {
         // select our channel
-        DMAC->CHID.reg = GetId();
+        DMAC->CHID.reg = this->GetId();
 
         switch (result) {
-        case RESULT::SUCCESS:
+        case IDMAEntity::RESULT::SUCCESS:
             // clear the transfer complete interrupt flag
             DMAC->CHINTFLAG.reg = 1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_COMPLETE);
             break;
-        case RESULT::FAIL_ERROR:
+        case IDMAEntity::RESULT::FAIL_ERROR:
             // clear the transfer error interrupt flag
             DMAC->CHINTFLAG.reg = 1 << static_cast<uint8_t>(INTERRUPT::ON_TRANSFER_ERROR);
             break;

@@ -26,26 +26,30 @@
 
 // constructor
 
-CDMANode::CDMANode(const DESC& desc)
-    : m_primitive_type(desc.data_type)
-    , m_is_incrementing(desc.is_incrementing) {
+template<typename BEAT_PRIMITIVE>
+CDMANode<BEAT_PRIMITIVE>::CDMANode(const DESC& desc)
+    : m_is_incrementing(desc.is_incrementing) {
 }
 
 // destructor
 
-CDMANode::~CDMANode() {
+template<typename BEAT_PRIMITIVE>
+CDMANode<BEAT_PRIMITIVE>::~CDMANode() {
 }
 
 // NVI
 
-CDMANode::BEAT_PRIMITIVE CDMANode::GetPrimitiveType() const {
-    return m_primitive_type;
+template<typename BEAT_PRIMITIVE>
+uint8_t CDMANode<BEAT_PRIMITIVE>::GetSizeOfBeatPrimitive() const {
+	return sizeof(BEAT_PRIMITIVE);
 }
 
-uint32_t CDMANode::GetAddress() const {
+template<typename BEAT_PRIMITIVE>
+uint32_t CDMANode<BEAT_PRIMITIVE>::GetAddress() const {
     return GetAddress_impl();
 }
 
-bool CDMANode::IsIncrementing() const {
+template<typename BEAT_PRIMITIVE>
+bool CDMANode<BEAT_PRIMITIVE>::IsIncrementing() const {
     return m_is_incrementing;
 }

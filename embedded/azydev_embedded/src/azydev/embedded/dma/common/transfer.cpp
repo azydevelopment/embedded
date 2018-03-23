@@ -26,7 +26,8 @@
 
 // constructor
 
-CDMATransfer::CDMATransfer(const DESC& desc)
+template<typename BEAT_PRIMITIVE>
+CDMATransfer<BEAT_PRIMITIVE>::CDMATransfer(const DESC& desc)
     : IDMAEntity()
     , m_id(desc.id_initial)
     , m_num_beats(0) {
@@ -34,26 +35,31 @@ CDMATransfer::CDMATransfer(const DESC& desc)
 
 // destructor
 
-CDMATransfer::~CDMATransfer() {
+template<typename BEAT_PRIMITIVE>
+CDMATransfer<BEAT_PRIMITIVE>::~CDMATransfer() {
 }
 
 // NVI
 
-uint8_t CDMATransfer::GetId() volatile const {
+template<typename BEAT_PRIMITIVE>
+uint8_t CDMATransfer<BEAT_PRIMITIVE>::GetId() volatile const {
     return m_id;
 }
 
-void CDMATransfer::Reset(const uint8_t id) {
+template<typename BEAT_PRIMITIVE>
+void CDMATransfer<BEAT_PRIMITIVE>::Reset(const uint8_t id) {
     Reset_impl();
     m_id        = id;
     m_num_beats = 0;
 }
 
-IDMAEntity::RESULT CDMATransfer::AddStep(const STEP_DESC& step) {
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMATransfer<BEAT_PRIMITIVE>::AddStep(const STEP_DESC& step) {
     m_num_beats += step.num_beats;
     return AddStep_impl(step);
 }
 
-uint32_t CDMATransfer::GetNumBeats() const {
+template<typename BEAT_PRIMITIVE>
+uint32_t CDMATransfer<BEAT_PRIMITIVE>::GetNumBeats() const {
     return m_num_beats;
 }

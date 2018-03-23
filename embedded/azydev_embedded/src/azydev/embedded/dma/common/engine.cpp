@@ -29,22 +29,25 @@
 
 // destructor
 
-CDMAEngine::~CDMAEngine() {
+template<typename BEAT_PRIMITIVE>
+CDMAEngine<BEAT_PRIMITIVE>::~CDMAEngine() {
 }
 
 // NVI
 
-void CDMAEngine::SetEnabled(const bool enabled) {
+template<typename BEAT_PRIMITIVE>
+void CDMAEngine<BEAT_PRIMITIVE>::SetEnabled(const bool enabled) {
     SetEnabled_impl(enabled);
 }
 
-CDMAEngine::RESULT CDMAEngine::StartTransfer(
-    CDMATransfer& transfer,
-    const CDMATransfer::CONFIG_DESC& transferConfig,
-    CDMATransfer::ITransferControl** transferControl) {
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMAEngine<BEAT_PRIMITIVE>::StartTransfer(
+    CDMATransfer<BEAT_PRIMITIVE>& transfer,
+    const typename CDMATransfer<BEAT_PRIMITIVE>::CONFIG_DESC& transferConfig,
+    typename CDMATransfer<BEAT_PRIMITIVE>::ITransferControl** transferControl) {
     RESULT result = RESULT::UNDEFINED;
 
-    CDMAChannel* channel = AcquireFreeChannel_impl();
+    CDMAChannel<BEAT_PRIMITIVE>* channel = AcquireFreeChannel_impl();
 
     if (channel != nullptr) {
         channel->StartTransfer(transfer, transferConfig, transferControl);
@@ -60,6 +63,7 @@ CDMAEngine::RESULT CDMAEngine::StartTransfer(
 
 // constructor
 
-CDMAEngine::CDMAEngine(const DESC&)
+template<typename BEAT_PRIMITIVE>
+CDMAEngine<BEAT_PRIMITIVE>::CDMAEngine(const DESC&)
     : IDMAEntity() {
 }

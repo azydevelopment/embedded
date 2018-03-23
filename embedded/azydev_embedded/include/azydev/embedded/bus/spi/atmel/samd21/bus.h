@@ -29,8 +29,6 @@
 #include <asf/sam0/drivers/sercom/sercom.h>
 
 class CPinsAtmelSAMD21;
-class CDMAEngine;
-class CDMANode;
 
 class CSPIBusAtmelSAMD21 final : public CSPIBus<uint16_t>
 {
@@ -101,9 +99,9 @@ public:
 
         // DMA
         bool is_dma_driven      = false;
-        CDMAEngine* dma_engine  = nullptr;
-        CDMANode* dma_node_src  = nullptr;
-        CDMANode* dma_node_dest = nullptr;
+        //CDMAEngine* dma_engine  = nullptr;
+        //CDMANode* dma_node_src  = nullptr;
+        //CDMANode* dma_node_dest = nullptr;
     };
 
     struct PIN_CONFIG_DESC

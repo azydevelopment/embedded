@@ -28,8 +28,9 @@
 
 // constructor
 
-CDMATransferAtmelSAMD21::CDMATransferAtmelSAMD21(const DESC& desc)
-    : CDMATransfer(desc)
+template<typename BEAT_PRIMITIVE>
+CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::CDMATransferAtmelSAMD21(const DESC& desc)
+    : CDMATransfer<BEAT_PRIMITIVE>(desc)
     , m_num_steps_max(desc.num_steps_max)
     , m_current_step(0)
     , m_descriptor_chain(nullptr) {
@@ -38,13 +39,16 @@ CDMATransferAtmelSAMD21::CDMATransferAtmelSAMD21(const DESC& desc)
 
 // destructor
 
-CDMATransferAtmelSAMD21::~CDMATransferAtmelSAMD21() {
+template<typename BEAT_PRIMITIVE>
+CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::~CDMATransferAtmelSAMD21() {
     delete[] m_descriptor_chain;
 }
 
 // member functions
 
-const CDMATransferAtmelSAMD21::DESCRIPTOR CDMATransferAtmelSAMD21::GetBaseDescriptor() const {
+template<typename BEAT_PRIMITIVE>
+const typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::DESCRIPTOR
+CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::GetBaseDescriptor() const {
     return m_descriptor_chain[0];
 }
 
@@ -52,17 +56,20 @@ const CDMATransferAtmelSAMD21::DESCRIPTOR CDMATransferAtmelSAMD21::GetBaseDescri
 
 // member functions
 
-uint8_t CDMATransferAtmelSAMD21::GetNumStepsMax() const {
+template<typename BEAT_PRIMITIVE>
+uint8_t CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::GetNumStepsMax() const {
     return m_num_steps_max;
 }
 
-uint8_t CDMATransferAtmelSAMD21::GetCurrentStep() const {
+template<typename BEAT_PRIMITIVE>
+uint8_t CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::GetCurrentStep() const {
     return m_current_step;
 }
 
 // CDMATransfer
 
-void CDMATransferAtmelSAMD21::Reset_impl() {
+template<typename BEAT_PRIMITIVE>
+void CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::Reset_impl() {
     // reset the number of steps to 0
     m_current_step = 0;
 
@@ -71,21 +78,23 @@ void CDMATransferAtmelSAMD21::Reset_impl() {
     m_descriptor_chain->next_descriptor_address = 0;
 }
 
-IDMAEntity::RESULT CDMATransferAtmelSAMD21::AddStep_impl(const CDMATransfer::STEP_DESC& step) {
-    RESULT result = IDMAEntity::RESULT::UNDEFINED;
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::AddStep_impl(
+    const typename CDMATransfer<BEAT_PRIMITIVE>::STEP_DESC& step) {
+    IDMAEntity::RESULT result = IDMAEntity::RESULT::UNDEFINED;
 
     if (GetCurrentStep() >= GetNumStepsMax()) {
         result = IDMAEntity::RESULT::FAIL_ERROR;
     } else {
-        CDMANode* nodeSrc = step.node_source;
-        CDMANode* nodeDst = step.node_destination;
+        CDMANode<BEAT_PRIMITIVE>* nodeSrc = step.node_source;
+        CDMANode<BEAT_PRIMITIVE>* nodeDst = step.node_destination;
 
         // calculate source data address
         uint32_t addressSrc = 0;
         {
             uint32_t offset = 0;
             if (nodeSrc->IsIncrementing()) {
-                offset = step.num_beats * static_cast<uint8_t>(nodeSrc->GetPrimitiveType());
+                offset = step.num_beats * nodeSrc->GetSizeOfBeatPrimitive();
             }
 
             addressSrc = nodeSrc->GetAddress() + offset;
@@ -96,7 +105,7 @@ IDMAEntity::RESULT CDMATransferAtmelSAMD21::AddStep_impl(const CDMATransfer::STE
         {
             uint32_t offset = 0;
             if (nodeDst->IsIncrementing()) {
-                offset = step.num_beats * static_cast<uint8_t>(nodeDst->GetPrimitiveType());
+                offset = step.num_beats * nodeDst->GetSizeOfBeatPrimitive();
             }
 
             addressDest = nodeDst->GetAddress() + offset;
@@ -137,4 +146,6 @@ IDMAEntity::RESULT CDMATransferAtmelSAMD21::AddStep_impl(const CDMATransfer::STE
     }
 
     return result;
+
+    return IDMAEntity::RESULT::SUCCESS;
 }

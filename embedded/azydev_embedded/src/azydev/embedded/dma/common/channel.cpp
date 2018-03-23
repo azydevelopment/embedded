@@ -28,23 +28,27 @@
 
 // destructor
 
-CDMAChannel::~CDMAChannel() {
+template<typename BEAT_PRIMITIVE>
+CDMAChannel<BEAT_PRIMITIVE>::~CDMAChannel() {
 }
 
 // NVI
 
-uint8_t CDMAChannel::GetId() volatile const {
+template<typename BEAT_PRIMITIVE>
+uint8_t CDMAChannel<BEAT_PRIMITIVE>::GetId() volatile const {
     return m_id;
 }
 
-void CDMAChannel::SetConfig(const CONFIG_DESC& config) {
+template<typename BEAT_PRIMITIVE>
+void CDMAChannel<BEAT_PRIMITIVE>::SetConfig(const CONFIG_DESC& config) {
     SetConfig_impl(config);
 }
 
-IDMAEntity::RESULT CDMAChannel::StartTransfer(
-    CDMATransfer& transfer,
-    const CDMATransfer::CONFIG_DESC& transferConfig,
-    CDMATransfer::ITransferControl** transferControl) {
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMAChannel<BEAT_PRIMITIVE>::StartTransfer(
+    CDMATransfer<BEAT_PRIMITIVE>& transfer,
+    const typename CDMATransfer<BEAT_PRIMITIVE>::CONFIG_DESC& transferConfig,
+    typename CDMATransfer<BEAT_PRIMITIVE>::ITransferControl** transferControl) {
     if (!IsTransferInProgress()) {
         m_transfer_current           = &transfer;
         m_callback_on_transfer_ended = transferConfig.callback_on_transfer_ended;
@@ -55,7 +59,8 @@ IDMAEntity::RESULT CDMAChannel::StartTransfer(
     }
 }
 
-bool CDMAChannel::IsTransferInProgress() volatile const {
+template<typename BEAT_PRIMITIVE>
+bool CDMAChannel<BEAT_PRIMITIVE>::IsTransferInProgress() volatile const {
     return m_transfer_current != nullptr;
 }
 
@@ -63,7 +68,8 @@ bool CDMAChannel::IsTransferInProgress() volatile const {
 
 // constructor
 
-CDMAChannel::CDMAChannel(const DESC& desc)
+template<typename BEAT_PRIMITIVE>
+CDMAChannel<BEAT_PRIMITIVE>::CDMAChannel(const DESC& desc)
     : IDMAEntity()
     , m_id(desc.id)
     , m_transfer_current(nullptr)
@@ -72,7 +78,8 @@ CDMAChannel::CDMAChannel(const DESC& desc)
 
 // member functions
 
-void CDMAChannel::MarkTransferEnded(const RESULT result) {
+template<typename BEAT_PRIMITIVE>
+void CDMAChannel<BEAT_PRIMITIVE>::MarkTransferEnded(const RESULT result) {
     MarkTransferEnded_impl(result);
     if (m_callback_on_transfer_ended != nullptr) {
         uint8_t id = m_transfer_current->GetId();

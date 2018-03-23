@@ -29,9 +29,8 @@
 
 #include <asf.h>
 
-class CDMATransfer;
-
-class CDMAChannelAtmelSAMD21 final : public CDMAChannel, public CDMATransfer::ITransferControl
+template<typename BEAT_PRIMITIVE>
+class CDMAChannelAtmelSAMD21 final : public CDMAChannel<BEAT_PRIMITIVE>, public CDMATransfer<BEAT_PRIMITIVE>::ITransferControl
 {
 public:
     enum class COMMAND : uint8_t
@@ -42,13 +41,13 @@ public:
         UNDEFINED = 255
     };
 
-    struct CONFIG_DESC : CDMAChannel::CONFIG_DESC
+    struct CONFIG_DESC : CDMAChannel<BEAT_PRIMITIVE>::CONFIG_DESC
     {
     };
 
-    struct DESC : CDMAChannel::DESC
+    struct DESC : CDMAChannel<BEAT_PRIMITIVE>::DESC
     {
-        CDMATransferAtmelSAMD21::DESCRIPTOR* descriptor;
+        typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::DESCRIPTOR* descriptor;
     };
 
     // constructor
@@ -95,9 +94,9 @@ private:
     CDMAChannelAtmelSAMD21 operator=(const CDMAChannelAtmelSAMD21&);
 
     // member variables
-    CDMATransferAtmelSAMD21::DESCRIPTOR* const m_descriptor;
+    typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::DESCRIPTOR* const m_descriptor;
     CONFIG_DESC m_config;
-    CDMATransferAtmelSAMD21::TRIGGER_ACTION m_trigger_action;
+    typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::TRIGGER_ACTION m_trigger_action;
     uint16_t m_num_beats_remaining;
 
     // member functions
@@ -105,10 +104,14 @@ private:
     void SetEnableInterrupt(const INTERRUPT, const bool enabled);
 
     // CDMAChannel
-    virtual void SetConfig_impl(const CDMAChannel::CONFIG_DESC&) override final;
+    virtual void SetConfig_impl(const typename CDMAChannel<BEAT_PRIMITIVE>::CONFIG_DESC&) override final;
     virtual void StartTransfer_impl(
-        CDMATransfer&,
-        const CDMATransfer::CONFIG_DESC&,
-        CDMATransfer::ITransferControl**) override final;
-    virtual void MarkTransferEnded_impl(const RESULT) override final;
+        CDMATransfer<BEAT_PRIMITIVE>&,
+        const typename CDMATransfer<BEAT_PRIMITIVE>::CONFIG_DESC&,
+        typename CDMATransfer<BEAT_PRIMITIVE>::ITransferControl**) override final;
+    virtual void MarkTransferEnded_impl(const IDMAEntity::RESULT) override final;
 };
+
+/* FORWARD DECLARED TEMPLATES */
+template class CDMAChannelAtmelSAMD21<uint8_t>;
+template class CDMAChannelAtmelSAMD21<uint16_t>;

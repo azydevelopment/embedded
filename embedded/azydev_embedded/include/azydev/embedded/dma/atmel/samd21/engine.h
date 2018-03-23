@@ -29,10 +29,11 @@
 
 #include <stdint.h>
 
-class CDMAEngineAtmelSAMD21 final : public CDMAEngine
+template<typename BEAT_PRIMITIVE>
+class CDMAEngineAtmelSAMD21 final : public CDMAEngine<BEAT_PRIMITIVE>
 {
 public:
-    struct DESC : CDMAEngine::DESC
+    struct DESC : CDMAEngine<BEAT_PRIMITIVE>::DESC
     {
     };
 
@@ -45,8 +46,8 @@ public:
     // ISR
     // TODO HACK: Effectively a static global (ie. can only have one CDMAEngineAtmelSAMD21 at one
     // time properly
-    static CDMAEngineAtmelSAMD21* s_dma_engine;
-    void _ISR();
+    static CDMAEngineAtmelSAMD21<BEAT_PRIMITIVE>* s_dma_engine;
+    static void _ISR();
 
 private:
     enum class REG_CTRL : uint8_t
@@ -58,19 +59,23 @@ private:
     };
 
     // rule of three
-    CDMAEngineAtmelSAMD21(const CDMAEngineAtmelSAMD21&);
-    CDMAEngineAtmelSAMD21& operator=(const CDMAEngineAtmelSAMD21&);
+    CDMAEngineAtmelSAMD21(const CDMAEngineAtmelSAMD21<BEAT_PRIMITIVE>&);
+    CDMAEngineAtmelSAMD21& operator=(const CDMAEngineAtmelSAMD21<BEAT_PRIMITIVE>&);
 
     // member variables
     uint8_t m_num_channels;
-    CDMAChannel** m_channels;
+    CDMAChannel<BEAT_PRIMITIVE>** m_channels;
 
     // member functions
     uint8_t GetNumChannels() const;
-    CDMAChannelAtmelSAMD21& GetChannel(const uint8_t channelId) const;
-    void SetEnablePriority(const CDMATransferAtmelSAMD21::PRIORITY, const bool enabled);
+    CDMAChannelAtmelSAMD21<BEAT_PRIMITIVE>& GetChannel(const uint8_t channelId) const;
+    void SetEnablePriority(const typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::PRIORITY, const bool enabled);
 
     // CDMAEngine
     virtual void SetEnabled_impl(const bool) override final;
-    virtual CDMAChannel* AcquireFreeChannel_impl() override final;
+    virtual CDMAChannel<BEAT_PRIMITIVE>* AcquireFreeChannel_impl() override final;
 };
+
+/* FORWARD DECLARED TEMPLATES */
+template class CDMAEngineAtmelSAMD21<uint8_t>;
+template class CDMAEngineAtmelSAMD21<uint16_t>;

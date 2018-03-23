@@ -26,7 +26,8 @@
 
 #include <stdint.h>
 
-class CDMATransferAtmelSAMD21 final : public CDMATransfer
+template<typename BEAT_PRIMITIVE>
+class CDMATransferAtmelSAMD21 final : public CDMATransfer<BEAT_PRIMITIVE>
 {
 public:
     enum class TRIGGER : uint8_t
@@ -171,18 +172,18 @@ public:
         uint32_t next_descriptor_address     = 0;
     };
 
-    struct STEP_DESC : CDMATransfer::STEP_DESC
+    struct STEP_DESC : CDMATransfer<BEAT_PRIMITIVE>::STEP_DESC
     {
-        DESCRIPTOR::EVENT_OUTPUT_SELECTION event_output_selection =
-            DESCRIPTOR::EVENT_OUTPUT_SELECTION::DISABLED;
-        DESCRIPTOR::BLOCK_COMPLETED_ACTION block_completed_action =
+        typename DESCRIPTOR::EVENT_OUTPUT_SELECTION event_output_selection =
+           DESCRIPTOR::EVENT_OUTPUT_SELECTION::DISABLED;
+        typename DESCRIPTOR::BLOCK_COMPLETED_ACTION block_completed_action =
             DESCRIPTOR::BLOCK_COMPLETED_ACTION::DISABLE_IF_LAST;
-        DESCRIPTOR::BEAT_SIZE beat_size               = DESCRIPTOR::BEAT_SIZE::BITS_8;
-        DESCRIPTOR::STEP_SIZE_SELECT step_size_select = DESCRIPTOR::STEP_SIZE_SELECT::DESTINATION;
-        DESCRIPTOR::STEP_SIZE step_size               = DESCRIPTOR::STEP_SIZE::X1;
+        typename DESCRIPTOR::BEAT_SIZE beat_size               = DESCRIPTOR::BEAT_SIZE::BITS_8;
+        typename DESCRIPTOR::STEP_SIZE_SELECT step_size_select = DESCRIPTOR::STEP_SIZE_SELECT::DESTINATION;
+        typename DESCRIPTOR::STEP_SIZE step_size               = DESCRIPTOR::STEP_SIZE::X1;
     };
 
-    struct CONFIG_DESC : CDMATransfer::CONFIG_DESC
+    struct CONFIG_DESC : CDMATransfer<BEAT_PRIMITIVE>::CONFIG_DESC
     {
         PRIORITY priority                     = PRIORITY::LVL_3;
         TRIGGER trigger                       = TRIGGER::UNDEFINED;
@@ -196,7 +197,7 @@ public:
         // bool enable_interrupt_channel_suspend   = false;
     };
 
-    struct DESC : CDMATransfer::DESC
+    struct DESC : CDMATransfer<BEAT_PRIMITIVE>::DESC
     {
         uint8_t num_steps_max = 0;
     };
@@ -226,5 +227,9 @@ private:
 
     // CDMATransfer
     virtual void Reset_impl() override final;
-    virtual RESULT AddStep_impl(const CDMATransfer::STEP_DESC&) override final;
+    virtual IDMAEntity::RESULT AddStep_impl(const typename CDMATransfer<BEAT_PRIMITIVE>::STEP_DESC&) override final;
 };
+
+/* FORWARD DECLARED TEMPLATES */
+template class CDMATransferAtmelSAMD21<uint8_t>;
+template class CDMATransferAtmelSAMD21<uint16_t>;

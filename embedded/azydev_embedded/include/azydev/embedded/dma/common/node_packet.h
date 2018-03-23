@@ -26,7 +26,8 @@
 
 #include <stdint.h>
 
-class CDMANodePacket final : public CDMANode
+template<typename BEAT_PRIMITIVE>
+class CDMANodePacket final : public CDMANode<BEAT_PRIMITIVE>
 {
 public:
     enum class PACKET_TYPE
@@ -35,19 +36,12 @@ public:
         READ
     };
 
-    union DATA
-    {
-        uint8_t* data_8bit;
-        uint16_t* data_16bit;
-        uint32_t* data_32bit;
-    };
-
     struct CONFIG_DESC
     {
         PACKET_TYPE packet_type = PACKET_TYPE::WRITE;
     };
 
-    struct DESC : CDMANode::DESC
+    struct DESC : CDMANode<BEAT_PRIMITIVE>::DESC
     {
         uint32_t num_beats_max = 0;
     };
@@ -62,9 +56,7 @@ public:
     virtual void Reset(const CONFIG_DESC&) final;
     virtual PACKET_TYPE GetPacketType() const final;
     virtual uint32_t GetNumBeatsMax() const final;
-    virtual void Write(const uint8_t) final;
-    virtual void Write(const uint16_t) final;
-    virtual void Write(const uint32_t) final;
+    virtual void Write(const BEAT_PRIMITIVE) final;
     virtual void PrepareForRead(const uint32_t numBeats) final;
 
 private:
@@ -76,8 +68,12 @@ private:
     PACKET_TYPE m_packet_type;
     uint32_t m_num_beats_max;
     uint32_t m_num_beats;
-    DATA m_data;
+    BEAT_PRIMITIVE* m_data;
 
     // CDMANode
     virtual uint32_t GetAddress_impl() const override final;
 };
+
+///* FORWARD DECLARED TEMPLATES */
+template class CDMANodePacket<uint8_t>;
+template class CDMANodePacket<uint16_t>;

@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 
+template<typename BEAT_PRIMITIVE>
 class CDMAChannel : public IDMAEntity
 {
 public:
@@ -47,9 +48,9 @@ public:
     virtual uint8_t GetId() volatile const final;
     virtual void SetConfig(const CONFIG_DESC&) final;
     virtual RESULT StartTransfer(
-        CDMATransfer&,
-        const CDMATransfer::CONFIG_DESC&,
-        CDMATransfer::ITransferControl**) final;
+        CDMATransfer<BEAT_PRIMITIVE>&,
+        const typename CDMATransfer<BEAT_PRIMITIVE>::CONFIG_DESC&,
+        typename CDMATransfer<BEAT_PRIMITIVE>::ITransferControl**) final;
     virtual bool IsTransferInProgress() volatile const final;
 
 protected:
@@ -66,14 +67,18 @@ private:
 
     // member variables
     uint8_t const m_id;
-    volatile CDMATransfer* m_transfer_current;
+    volatile CDMATransfer<BEAT_PRIMITIVE>* m_transfer_current;
     OnTransferEnded m_callback_on_transfer_ended;
 
     // abstract
     virtual void SetConfig_impl(const CONFIG_DESC&) = 0;
     virtual void StartTransfer_impl(
-        CDMATransfer&,
-        const CDMATransfer::CONFIG_DESC&,
-        CDMATransfer::ITransferControl**)             = 0;
+        CDMATransfer<BEAT_PRIMITIVE>&,
+        const typename CDMATransfer<BEAT_PRIMITIVE>::CONFIG_DESC&,
+        typename CDMATransfer<BEAT_PRIMITIVE>::ITransferControl**)             = 0;
     virtual void MarkTransferEnded_impl(const RESULT) = 0;
 };
+
+/* FORWARD DECLARED TEMPLATES */
+template class CDMAChannel<uint8_t>;
+template class CDMAChannel<uint16_t>;

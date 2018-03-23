@@ -26,6 +26,10 @@
 
 #include <stdint.h>
 
+template<typename BEAT_PRIMITIVE>
+class CDMANode;
+
+template<typename BEAT_PRIMITIVE>
 class CDMATransfer : public IDMAEntity
 {
 public:
@@ -39,9 +43,9 @@ public:
 
     struct STEP_DESC
     {
-        uint32_t num_beats         = 0;
-        CDMANode* node_source      = nullptr;
-        CDMANode* node_destination = nullptr;
+        uint32_t num_beats                         = 0;
+        CDMANode<BEAT_PRIMITIVE>* node_source      = nullptr;
+        CDMANode<BEAT_PRIMITIVE>* node_destination = nullptr;
     };
 
     struct CONFIG_DESC
@@ -80,3 +84,7 @@ private:
     virtual void Reset_impl()                     = 0;
     virtual RESULT AddStep_impl(const STEP_DESC&) = 0;
 };
+
+/* FORWARD DECLARED TEMPLATES */
+template class CDMATransfer<uint8_t>;
+template class CDMATransfer<uint16_t>;

@@ -24,19 +24,12 @@
 
 #include <stdint.h>
 
+template<typename BEAT_PRIMITIVE>
 class CDMANode
 {
 public:
-    enum class BEAT_PRIMITIVE
-    {
-        UINT8_T = 1,
-        UINT16_T,
-        UINT32_T
-    };
-
     struct DESC
     {
-        BEAT_PRIMITIVE data_type = BEAT_PRIMITIVE::UINT8_T;
         bool is_incrementing     = false;
     };
 
@@ -47,7 +40,7 @@ public:
     virtual ~CDMANode();
 
     // NVI
-    virtual BEAT_PRIMITIVE GetPrimitiveType() const final;
+	virtual uint8_t GetSizeOfBeatPrimitive() const final;
     virtual uint32_t GetAddress() const final;
     virtual bool IsIncrementing() const final;
 
@@ -57,9 +50,12 @@ private:
     CDMANode& operator=(const CDMANode&);
 
     // member variables
-    const BEAT_PRIMITIVE m_primitive_type;
     const bool m_is_incrementing;
 
     // abstract
     virtual uint32_t GetAddress_impl() const = 0;
 };
+
+/* FORWARD DECLARED TEMPLATES */
+template class CDMANode<uint8_t>;
+template class CDMANode<uint16_t>;
