@@ -710,9 +710,13 @@
     <Folder Include="include\azydev\embedded\dma\atmel\" />
     <Folder Include="include\azydev\embedded\dma\atmel\samd21\" />
     <Folder Include="include\azydev\embedded\dma\common\" />
+    <Folder Include="include\azydev\embedded\interrupts\atmel\samd21" />
+    <Folder Include="include\azydev\embedded\interrupts\common" />
+    <Folder Include="include\azydev\embedded\interrupts\atmel" />
     <Folder Include="include\azydev\embedded\logging\" />
     <Folder Include="include\azydev\embedded\logging\atmel\" />
     <Folder Include="include\azydev\embedded\logging\atmel\samd21\" />
+    <Folder Include="include\azydev\embedded\interrupts" />
     <Folder Include="include\azydev\embedded\pins\" />
     <Folder Include="include\azydev\embedded\pins\atmel\" />
     <Folder Include="include\azydev\embedded\pins\atmel\samd21\" />
@@ -826,10 +830,13 @@
     <Folder Include="src\azydev\embedded\dma\atmel\" />
     <Folder Include="src\azydev\embedded\dma\atmel\samd21\" />
     <Folder Include="src\azydev\embedded\dma\common\" />
+    <Folder Include="src\azydev\embedded\interrupt\atmel" />
+    <Folder Include="src\azydev\embedded\interrupt\atmel\samd21" />
     <Folder Include="src\azydev\embedded\logging" />
     <Folder Include="src\azydev\embedded\logging\atmel" />
     <Folder Include="src\azydev\embedded\logging\atmel\samd21" />
     <Folder Include="src\azydev\embedded\clock" />
+    <Folder Include="src\azydev\embedded\interrupt" />
     <Folder Include="src\azydev\embedded\pins\" />
     <Folder Include="src\azydev\embedded\pins\atmel\" />
     <Folder Include="src\azydev\embedded\pins\atmel\samd21\" />
@@ -942,6 +949,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\azydev\embedded\dma\common\transfer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\azydev\embedded\interrupts\atmel\samd21\interrupts.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\azydev\embedded\interrupts\common\interrupts.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\azydev\embedded\logging\atmel\samd21\logger.h">
@@ -1644,6 +1657,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\azydev\embedded\dma\common\transfer.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\azydev\embedded\interrupt\atmel\samd21\interrupts.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\azydev\embedded\logging\atmel\samd21\logger.cpp">

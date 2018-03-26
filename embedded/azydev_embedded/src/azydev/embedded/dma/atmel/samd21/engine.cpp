@@ -21,6 +21,7 @@
  * SOFTWARE. */
 
 #include <azydev/embedded/dma/atmel/samd21/engine.h>
+#include <azydev/embedded/interrupts/atmel/samd21/interrupts.h>
 
 #include <asf.h>
 
@@ -35,16 +36,6 @@ static typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::DESCRIPTOR fs_descripto
 template<typename BEAT_PRIMITIVE>
 static typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::DESCRIPTOR
     fs_descriptors_writeback[NUM_CHANNELS];
-
-// TODO HACK: Abstract all these ISR things away
-static void (*ISR_DMAC)(void);
-
-/* ISR */
-
-// TODO HACK: Remove ASF ISR usage
-void DMAC_Handler() {
-    ISR_DMAC();
-}
 
 /* STATIC */
 
@@ -89,7 +80,8 @@ CDMAEngineAtmelSAMD21<BEAT_PRIMITIVE>::CDMAEngineAtmelSAMD21(const DESC& desc)
 
     // TODO HACK: Only one engine can ever exist
     s_dma_engine = this;
-    ISR_DMAC     = &(s_dma_engine->_ISR);
+    CInterruptsAtmelSAMD21& interrupts = CInterruptsAtmelSAMD21::GetInstance();
+	interrupts.SetISR(CInterruptsAtmelSAMD21::ISR_DMAC, &(s_dma_engine->_ISR));
 }
 
 // destructor
