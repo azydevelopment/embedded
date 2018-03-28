@@ -57,5 +57,8 @@ void CInterruptsAtmelSAMD21::SetISR_impl(const uint8_t id, const ISR isr) {
 /* ISRs */
 
 void DMAC_Handler() {
-    fs_isrs[CInterruptsAtmelSAMD21::ISR_ID::ISR_DMAC]();
+    CInterrupts::ISR isr = fs_isrs[CInterruptsAtmelSAMD21::ISR_ID::ISR_DMAC];
+    if (isr != nullptr) {
+        isr();
+    }
 }
