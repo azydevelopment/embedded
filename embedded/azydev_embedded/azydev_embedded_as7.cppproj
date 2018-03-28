@@ -832,11 +832,11 @@
     <Folder Include="src\azydev\embedded\dma\common\" />
     <Folder Include="src\azydev\embedded\interrupt\atmel" />
     <Folder Include="src\azydev\embedded\interrupt\atmel\samd21" />
-    <Folder Include="src\azydev\embedded\logging" />
-    <Folder Include="src\azydev\embedded\logging\atmel" />
-    <Folder Include="src\azydev\embedded\logging\atmel\samd21" />
     <Folder Include="src\azydev\embedded\clock" />
     <Folder Include="src\azydev\embedded\interrupt" />
+    <Folder Include="src\azydev\embedded\logging\" />
+    <Folder Include="src\azydev\embedded\logging\atmel\" />
+    <Folder Include="src\azydev\embedded\logging\atmel\samd21\" />
     <Folder Include="src\azydev\embedded\pins\" />
     <Folder Include="src\azydev\embedded\pins\atmel\" />
     <Folder Include="src\azydev\embedded\pins\atmel\samd21\" />

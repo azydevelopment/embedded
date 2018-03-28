@@ -25,6 +25,8 @@
 #include <azydev/embedded/util/binary.h>
 
 #include <azydev/embedded/bus/spi/common/bus.h>
+#include <azydev/embedded/dma/atmel/samd21/engine.h>
+#include <azydev/embedded/dma/atmel/samd21/transfer.h>
 
 #include <asf/sam0/drivers/sercom/sercom.h>
 
@@ -98,10 +100,10 @@ public:
         bool enable_interrupt_data_register_empty   = false;
 
         // DMA
-        bool is_dma_driven      = false;
-        //CDMAEngine* dma_engine  = nullptr;
-        //CDMANode* dma_node_src  = nullptr;
-        //CDMANode* dma_node_dest = nullptr;
+        bool is_dma_driven                 = false;
+        CDMAEngine<uint16_t>* dma_engine   = nullptr;
+        CDMANode<uint16_t>* dma_node_write = nullptr;
+        CDMANode<uint16_t>* dma_node_read  = nullptr;
     };
 
     struct PIN_CONFIG_DESC

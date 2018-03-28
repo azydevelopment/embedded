@@ -53,3 +53,18 @@ template<typename BEAT_PRIMITIVE>
 bool CDMANode<BEAT_PRIMITIVE>::IsIncrementing() const {
     return m_is_incrementing;
 }
+
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMANode<BEAT_PRIMITIVE>::Reset() {
+	return Reset_impl();
+}
+
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMANode<BEAT_PRIMITIVE>::RecordWrite(const BEAT_PRIMITIVE data) {
+	return RecordWrite(data);
+}
+
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMANode<BEAT_PRIMITIVE>::RecordRead(const uint32_t numBeats) {
+	return RecordRead_impl(numBeats);
+}

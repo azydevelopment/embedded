@@ -29,11 +29,13 @@
 template<typename BEAT_PRIMITIVE>
 CDMANodePacket<BEAT_PRIMITIVE>::CDMANodePacket(const DESC& desc)
     : CDMANode<BEAT_PRIMITIVE>(desc)
-    , m_packet_type(PACKET_TYPE::WRITE)
+    , m_packet_type(PACKET_TYPE::UNDEFINED)
     , m_num_beats_max(desc.num_beats_max)
     , m_num_beats(0)
     , m_data(nullptr) {
     m_data = new BEAT_PRIMITIVE[m_num_beats_max];
+
+    this->Reset();
 }
 
 // destructor
@@ -43,13 +45,9 @@ CDMANodePacket<BEAT_PRIMITIVE>::~CDMANodePacket() {
     delete[] m_data;
 }
 
-// NVI
+/* PRIVATE */
 
-template<typename BEAT_PRIMITIVE>
-void CDMANodePacket<BEAT_PRIMITIVE>::Reset(const CONFIG_DESC& config) {
-    m_packet_type = config.packet_type;
-    m_num_beats   = 0;
-}
+// member functions
 
 template<typename BEAT_PRIMITIVE>
 typename CDMANodePacket<BEAT_PRIMITIVE>::PACKET_TYPE
@@ -62,26 +60,44 @@ uint32_t CDMANodePacket<BEAT_PRIMITIVE>::GetNumBeatsMax() const {
     return m_num_beats_max;
 }
 
-template<typename BEAT_PRIMITIVE>
-void CDMANodePacket<BEAT_PRIMITIVE>::Write(const BEAT_PRIMITIVE data) {
-    if (GetPacketType() == PACKET_TYPE::WRITE && m_num_beats < GetNumBeatsMax()) {
-        m_data[m_num_beats] = data;
-        m_num_beats++;
-    }
-}
-
-template<typename BEAT_PRIMITIVE>
-void CDMANodePacket<BEAT_PRIMITIVE>::PrepareForRead(const uint32_t numBeats) {
-    if (GetPacketType() == PACKET_TYPE::READ) {
-        m_num_beats = numBeats;
-    }
-}
-
-/* PRIVATE */
-
 // CDMANode
 
 template<typename BEAT_PRIMITIVE>
 uint32_t CDMANodePacket<BEAT_PRIMITIVE>::GetAddress_impl() const {
     return reinterpret_cast<uint32_t>(m_data);
+}
+
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMANodePacket<BEAT_PRIMITIVE>::Reset_impl() {
+    m_packet_type = PACKET_TYPE::UNDEFINED;
+    m_num_beats   = 0;
+
+    return IDMAEntity::RESULT::SUCCESS;
+}
+
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMANodePacket<BEAT_PRIMITIVE>::RecordWrite_impl(const BEAT_PRIMITIVE data) {
+    IDMAEntity::RESULT result = IDMAEntity::RESULT::UNDEFINED;
+    if (GetPacketType() == PACKET_TYPE::WRITE && m_num_beats < GetNumBeatsMax()) {
+        m_data[m_num_beats] = data;
+        m_num_beats++;
+        result = IDMAEntity::RESULT::SUCCESS;
+    } else {
+        result = IDMAEntity::RESULT::FAIL_ERROR;
+    }
+
+    return result;
+}
+
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMANodePacket<BEAT_PRIMITIVE>::RecordRead_impl(const uint32_t numBeats) {
+    IDMAEntity::RESULT result = IDMAEntity::RESULT::UNDEFINED;
+    if (GetPacketType() == PACKET_TYPE::READ && (m_num_beats + numBeats) < GetNumBeatsMax()) {
+        m_num_beats += numBeats;
+        result = IDMAEntity::RESULT::SUCCESS;
+    } else {
+        result = IDMAEntity::RESULT::FAIL_ERROR;
+    }
+
+    return result;
 }

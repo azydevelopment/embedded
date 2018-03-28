@@ -30,21 +30,8 @@ template<typename BEAT_PRIMITIVE>
 class CDMANodePacket final : public CDMANode<BEAT_PRIMITIVE>
 {
 public:
-    enum class PACKET_TYPE
-    {
-        WRITE,
-        READ
-    };
-
-    struct CONFIG_DESC
-    {
-        PACKET_TYPE packet_type = PACKET_TYPE::WRITE;
-    };
-
     struct DESC : CDMANode<BEAT_PRIMITIVE>::DESC
-    {
-        uint32_t num_beats_max = 0;
-    };
+    { uint32_t num_beats_max = 0; };
 
     // constructor
     CDMANodePacket(const DESC&);
@@ -52,14 +39,14 @@ public:
     // destructor
     virtual ~CDMANodePacket() override final;
 
-    // NVI
-    virtual void Reset(const CONFIG_DESC&) final;
-    virtual PACKET_TYPE GetPacketType() const final;
-    virtual uint32_t GetNumBeatsMax() const final;
-    virtual void Write(const BEAT_PRIMITIVE) final;
-    virtual void PrepareForRead(const uint32_t numBeats) final;
-
 private:
+    enum class PACKET_TYPE
+    {
+        WRITE,
+        READ,
+        UNDEFINED = 255
+    };
+
     // rule of three
     CDMANodePacket(const CDMANodePacket&);
     CDMANodePacket& operator=(const CDMANodePacket&);
@@ -70,10 +57,17 @@ private:
     uint32_t m_num_beats;
     BEAT_PRIMITIVE* m_data;
 
+    // member functions
+    PACKET_TYPE GetPacketType() const;
+    uint32_t GetNumBeatsMax() const;
+
     // CDMANode
     virtual uint32_t GetAddress_impl() const override final;
+    virtual IDMAEntity::RESULT Reset_impl() override final;
+    virtual IDMAEntity::RESULT RecordWrite_impl(const BEAT_PRIMITIVE) override final;
+    virtual IDMAEntity::RESULT RecordRead_impl(const uint32_t numBeats = 1) override final;
 };
 
-///* FORWARD DECLARED TEMPLATES */
+/* FORWARD DECLARED TEMPLATES */
 template class CDMANodePacket<uint8_t>;
 template class CDMANodePacket<uint16_t>;

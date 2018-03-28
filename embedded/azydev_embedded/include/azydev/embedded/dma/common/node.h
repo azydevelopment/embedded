@@ -22,16 +22,16 @@
 
 #pragma once
 
+#include <azydev/embedded/dma/common/entity.h>
+
 #include <stdint.h>
 
 template<typename BEAT_PRIMITIVE>
-class CDMANode
+class CDMANode : public IDMAEntity
 {
 public:
     struct DESC
-    {
-        bool is_incrementing     = false;
-    };
+    { bool is_incrementing = false; };
 
     // constructor
     CDMANode(const DESC&);
@@ -40,9 +40,12 @@ public:
     virtual ~CDMANode();
 
     // NVI
-	virtual uint8_t GetSizeOfBeatPrimitive() const final;
+    virtual uint8_t GetSizeOfBeatPrimitive() const final;
     virtual uint32_t GetAddress() const final;
     virtual bool IsIncrementing() const final;
+    virtual RESULT Reset() final;
+    virtual RESULT RecordWrite(const BEAT_PRIMITIVE) final;
+    virtual RESULT RecordRead(const uint32_t count = 1) final;
 
 private:
     // rule of three
@@ -53,7 +56,10 @@ private:
     const bool m_is_incrementing;
 
     // abstract
-    virtual uint32_t GetAddress_impl() const = 0;
+    virtual uint32_t GetAddress_impl() const              = 0;
+    virtual RESULT Reset_impl()                           = 0;
+    virtual RESULT RecordWrite_impl(const BEAT_PRIMITIVE) = 0;
+    virtual RESULT RecordRead_impl(const uint32_t numBeats = 1) = 0;
 };
 
 /* FORWARD DECLARED TEMPLATES */
