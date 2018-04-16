@@ -942,10 +942,10 @@
     <Compile Include="include\azydev\embedded\dma\common\node.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="include\azydev\embedded\dma\common\node_address.h">
+    <Compile Include="include\azydev\embedded\dma\common\node_packet.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="include\azydev\embedded\dma\common\node_packet.h">
+    <Compile Include="include\azydev\embedded\dma\common\pool.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\azydev\embedded\dma\common\transfer.h">
@@ -1650,10 +1650,10 @@
     <Compile Include="src\azydev\embedded\dma\common\node.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\azydev\embedded\dma\common\node_address.cpp">
+    <Compile Include="src\azydev\embedded\dma\common\node_packet.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\azydev\embedded\dma\common\node_packet.cpp">
+    <Compile Include="src\azydev\embedded\dma\common\pool.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\azydev\embedded\dma\common\transfer.cpp">
