@@ -23,6 +23,7 @@
 #pragma once
 
 #include <azydev/embedded/dma/common/entity.h>
+#include <azydev/embedded/dma/common/node.h>
 
 #include <stdint.h>
 
@@ -46,20 +47,34 @@ public:
     virtual RESULT PushAllocation() final;
     virtual RESULT PopAllocation() final;
     virtual RESULT RecordWrite(const BEAT_PRIMITIVE) final;
-    virtual RESULT RecordRead(const uint32_t count = 1) final;
+    virtual RESULT RecordRead(const uint32_t numBeats = 1) final;
 
 private:
-    enum class PACKET_TYPE
+    class Allocation final : public CDMANode<BEAT_PRIMITIVE>
     {
-        WRITE,
-        READ,
-        UNDEFINED = 255
-    };
+    public:
+        struct DESC : CDMANode<BEAT_PRIMITIVE>::DESC
+        {
+        };
 
-    struct ALLOCATION
-    {
-        uint32_t beat_index = 0;
-        uint32_t num_beats  = 0;
+        // constructor
+        Allocation(const DESC&);
+
+        // destructor
+        virtual ~Allocation() override final;
+
+    private:
+        // rule of three
+        Allocation(const Allocation&);
+        Allocation& operator=(const Allocation&);
+
+        // member variables
+        BEAT_PRIMITIVE** const m_beat_index;
+        uint32_t m_num_beats;
+
+        // CDMANode
+        virtual uint32_t GetBaseAddress_impl() const final;
+        virtual RESULT Reset_impl() final;
     };
 
     // rule of three

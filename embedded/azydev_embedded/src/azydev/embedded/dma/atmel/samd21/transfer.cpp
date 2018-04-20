@@ -97,7 +97,7 @@ IDMAEntity::RESULT CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::AddStep_impl(
                 offset = step.num_beats * nodeSrc->GetSizeOfBeatPrimitive();
             }
 
-            addressSrc = nodeSrc->GetAddress() + offset;
+            addressSrc = nodeSrc->GetBaseAddress() + offset;
         }
 
         // calculate source data destination
@@ -108,7 +108,7 @@ IDMAEntity::RESULT CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::AddStep_impl(
                 offset = step.num_beats * nodeDst->GetSizeOfBeatPrimitive();
             }
 
-            addressDest = nodeDst->GetAddress() + offset;
+            addressDest = nodeDst->GetBaseAddress() + offset;
         }
 
         // configure descriptors

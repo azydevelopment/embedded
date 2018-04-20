@@ -41,12 +41,12 @@ CDMANode<BEAT_PRIMITIVE>::~CDMANode() {
 
 template<typename BEAT_PRIMITIVE>
 uint8_t CDMANode<BEAT_PRIMITIVE>::GetSizeOfBeatPrimitive() const {
-	return sizeof(BEAT_PRIMITIVE);
+    return sizeof(BEAT_PRIMITIVE);
 }
 
 template<typename BEAT_PRIMITIVE>
-uint32_t CDMANode<BEAT_PRIMITIVE>::GetAddress() const {
-    return GetAddress_impl();
+uint32_t CDMANode<BEAT_PRIMITIVE>::GetBaseAddress() const {
+    return GetBaseAddress_impl();
 }
 
 template<typename BEAT_PRIMITIVE>
@@ -56,15 +56,5 @@ bool CDMANode<BEAT_PRIMITIVE>::IsIncrementing() const {
 
 template<typename BEAT_PRIMITIVE>
 IDMAEntity::RESULT CDMANode<BEAT_PRIMITIVE>::Reset() {
-	return Reset_impl();
-}
-
-template<typename BEAT_PRIMITIVE>
-IDMAEntity::RESULT CDMANode<BEAT_PRIMITIVE>::RecordWrite(const BEAT_PRIMITIVE data) {
-	return RecordWrite(data);
-}
-
-template<typename BEAT_PRIMITIVE>
-IDMAEntity::RESULT CDMANode<BEAT_PRIMITIVE>::RecordRead(const uint32_t numBeats) {
-	return RecordRead_impl(numBeats);
+    return Reset_impl();
 }

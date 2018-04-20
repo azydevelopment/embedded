@@ -23,7 +23,6 @@
 #include <azydev/embedded/bus/spi/atmel/samd21/bus.h>
 
 #include <azydev/embedded/dma/common/engine.h>
-#include <azydev/embedded/dma/common/node_packet.h>
 #include <azydev/embedded/pins/atmel/samd21/pins.h>
 #include <azydev/embedded/util/binary.h>
 
