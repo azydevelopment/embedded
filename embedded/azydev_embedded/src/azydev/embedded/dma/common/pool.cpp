@@ -42,15 +42,26 @@ CDMAPool<BEAT_PRIMITIVE>::CDMAPool(const DESC& desc)
     , m_allocation_active(nullptr)
     , m_allocation_tail_index(0) {
     m_data        = new BEAT_PRIMITIVE[desc.num_beats_max];
-    m_allocations = new ALLOCATION[desc.num_allocations_max];
+    m_allocations = new Allocation*[desc.num_allocations_max];
+
+    // actually create the allocation objects
+    typename Allocation::DESC allocationDesc = {};
+    allocationDesc.is_incrementing           = true;
+    for (uint8_t i = 0; i < desc.num_allocations_max; i++) {
+        m_allocations[i] = new Allocation(allocationDesc);
+    }
 }
 
 // destructor
 
 template<typename BEAT_PRIMITIVE>
 CDMAPool<BEAT_PRIMITIVE>::~CDMAPool() {
-    delete[] m_data;
+    for (uint8_t i = 0; i < m_num_allocations_max; i++) {
+        delete m_allocations[i];
+    }
+
     delete[] m_allocations;
+    delete[] m_data;
 }
 
 // NVI
@@ -60,24 +71,25 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::PushAllocation() {
     RESULT result = RESULT::UNDEFINED;
 
     // check if we have space for another allocation
-    if (IsBufferFull() || m_num_allocations == m_num_allocations_max) {
+    if (IsPoolFull()) {
         result = RESULT::FAIL_ERROR;
     } else {
         // populate new allocation
         uint8_t allocationNewIndex =
             (m_allocation_tail_index + m_num_allocations) % m_num_allocations_max;
-        ALLOCATION& allocationNew = GetAllocation(allocationNewIndex);
+        Allocation& allocationNew = GetAllocation(allocationNewIndex);
         {
             // if this is the first allocation
             if (m_num_allocations == 0) {
-                allocationNew.beat_index = m_beat_tail_index;
+                allocationNew.m_beat_base_address = &m_data[m_beat_tail_index];
             } else {
                 // otherwise, continue from the end of the last allocation
-                ALLOCATION& allocationActive = *GetAllocationActive();
-                allocationNew.beat_index = allocationActive.beat_index + allocationActive.num_beats;
+                Allocation& allocationActive = *GetAllocationActive();
+                allocationNew.m_beat_base_address =
+                    allocationActive.m_beat_base_address + allocationActive.m_num_beats;
             }
 
-            allocationNew.num_beats = 0;
+            allocationNew.m_num_beats = 0;
         }
 
         // update tracking state
@@ -98,10 +110,10 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::PopAllocation() {
     if (m_num_allocations == 0) {
         result = RESULT::FAIL_ERROR;
     } else {
-        ALLOCATION& allocationTail = GetAllocation(m_allocation_tail_index);
+        Allocation& allocationTail = GetAllocation(m_allocation_tail_index);
 
         // mark beats of the tail allocation as free
-        m_num_beats -= allocationTail.num_beats;
+        m_num_beats -= allocationTail.m_num_beats;
 
         // remove an allocation
         m_num_allocations--;
@@ -110,8 +122,8 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::PopAllocation() {
         if (m_num_allocations > 0) {
             m_allocation_tail_index = (m_allocation_tail_index + 1) % m_num_allocations_max;
 
-            ALLOCATION& allocationTailNew = GetAllocation(m_allocation_tail_index);
-            m_beat_tail_index             = allocationTailNew.beat_index;
+            Allocation& allocationTailNew = GetAllocation(m_allocation_tail_index);
+            m_beat_tail_index             = allocationTailNew.m_beat_base_address - m_data;
         }
 
         result = RESULT::SUCCESS;
@@ -124,7 +136,7 @@ template<typename BEAT_PRIMITIVE>
 IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RecordWrite(const BEAT_PRIMITIVE data) {
     RESULT result = RESULT::UNDEFINED;
 
-    if (IsBufferFull()) {
+    if (IsPoolFull()) {
         result = RESULT::FAIL_ERROR;
     } else {
         // if we're about to rollover, try to rebase to the start of the data buffer
@@ -132,13 +144,13 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RecordWrite(const BEAT_PRIMITIVE da
 
         if (result == RESULT::SUCCESS) {
             // get currently active allocation
-            ALLOCATION& allocationActive = *GetAllocationActive();
+            Allocation& allocationActive = *GetAllocationActive();
 
             // write the beat to the data buffer
-            m_data[allocationActive.beat_index + allocationActive.num_beats] = data;
+            *(allocationActive.m_beat_base_address + allocationActive.m_num_beats) = data;
 
             // track the new beat
-            allocationActive.num_beats++;
+            allocationActive.m_num_beats++;
             m_num_beats++;
         }
     }
@@ -150,7 +162,7 @@ template<typename BEAT_PRIMITIVE>
 IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RecordRead(const uint32_t numBeats) {
     RESULT result = IDMAEntity::RESULT::UNDEFINED;
 
-    if (IsBufferFull()) {
+    if (IsPoolFull()) {
         result = RESULT::FAIL_ERROR;
     } else {
         // if we're about to rollover, try to rebase to the start of the data buffer
@@ -158,10 +170,10 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RecordRead(const uint32_t numBeats)
 
         if (result == RESULT::SUCCESS) {
             // get currently active allocation
-            ALLOCATION& allocationActive = *GetAllocationActive();
+            Allocation& allocationActive = *GetAllocationActive();
 
             // track new beat
-            allocationActive.num_beats += numBeats;
+            allocationActive.m_num_beats += numBeats;
             m_num_beats++;
         }
     }
@@ -173,18 +185,30 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RecordRead(const uint32_t numBeats)
 // member functions
 
 template<typename BEAT_PRIMITIVE>
-bool CDMAPool<BEAT_PRIMITIVE>::IsBufferFull() const {
-    return m_num_beats == m_num_beats_max;
+bool CDMAPool<BEAT_PRIMITIVE>::IsPoolFull() const {
+    bool isAllocationAvailable = !(m_num_allocations == m_num_allocations_max);
+
+    uint32_t beatHeadIndex =
+        ((m_allocation_active->m_beat_base_address + m_allocation_active->m_num_beats) - m_data)
+        % m_num_beats_max;
+
+    bool isBeatAvailable = (m_num_beats == 0) || (beatHeadIndex != m_beat_tail_index);
+
+    if (isAllocationAvailable && isBeatAvailable) {
+        return false;
+    } else {
+        return true;
+    }
 }
 
 template<typename BEAT_PRIMITIVE>
-typename CDMAPool<BEAT_PRIMITIVE>::ALLOCATION&
+typename CDMAPool<BEAT_PRIMITIVE>::Allocation&
 CDMAPool<BEAT_PRIMITIVE>::GetAllocation(const uint8_t index) const {
-    return m_allocations[index];
+    return *m_allocations[index];
 }
 
 template<typename BEAT_PRIMITIVE>
-typename CDMAPool<BEAT_PRIMITIVE>::ALLOCATION* const
+typename CDMAPool<BEAT_PRIMITIVE>::Allocation* const
 CDMAPool<BEAT_PRIMITIVE>::GetAllocationActive() const {
     return m_allocation_active;
 }
@@ -194,17 +218,22 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RebaseAllocationIfNeeded(const uint
     RESULT result = RESULT::UNDEFINED;
 
     // check if there's enough space at the beginning of the data buffer
-    ALLOCATION* allocationActive = GetAllocationActive();
+    Allocation* allocationActive = GetAllocationActive();
+
+    BEAT_PRIMITIVE* allocationNextBeat =
+        allocationActive->m_beat_base_address + allocationActive->m_num_beats;
+    BEAT_PRIMITIVE* poolBeatEnd = m_data + m_num_beats_max;
 
     // if at the end of the buffer
-    if ((allocationActive->beat_index + allocationActive->num_beats) >= m_num_beats_max) {
+    if (allocationNextBeat >= poolBeatEnd) {
         // if we can fit this allocation at the start of this buffer
-        if (allocationActive->num_beats + beatsToAdd <= m_beat_tail_index) {
+        if (allocationActive->m_num_beats + beatsToAdd <= m_beat_tail_index) {
             // copy over this allocation's data to the start of the data buffer
-            memcpy(&m_data[0], &m_data[allocationActive->beat_index], allocationActive->num_beats);
+            memcpy(
+                &m_data[0], allocationActive->m_beat_base_address, allocationActive->m_num_beats);
 
             // update the allocation's metadata
-            allocationActive->beat_index = 0;
+            allocationActive->m_beat_base_address = m_data;
 
             result = RESULT::SUCCESS;
         } else {
@@ -226,24 +255,25 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RebaseAllocationIfNeeded(const uint
 // constructor
 
 template<typename BEAT_PRIMITIVE>
-CDMAPool<BEAT_PRIMITIVE>::View::View(const DESC& desc)
+CDMAPool<BEAT_PRIMITIVE>::Allocation::Allocation(const DESC& desc)
     : CDMANode<BEAT_PRIMITIVE>(desc)
-    , m_beat_reference(desc.beat_base_address) {
+    , m_beat_base_address(nullptr)
+    , m_num_beats(0) {
 }
 
 // destructor
 
 template<typename BEAT_PRIMITIVE>
-CDMAPool<BEAT_PRIMITIVE>::View::~View() {
+CDMAPool<BEAT_PRIMITIVE>::Allocation::~Allocation() {
 }
 
 /* PRIVATE */
 
 template<typename BEAT_PRIMITIVE>
-uint32_t CDMAPool<BEAT_PRIMITIVE>::View::GetBaseAddress_impl() const {
-    return reinterpret_cast<uint32_t>(*m_beat_reference);
+uint32_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetBaseAddress_impl() const {
+    return reinterpret_cast<uint32_t>(m_beat_base_address);
 }
 
 template<typename BEAT_PRIMITIVE>
-IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::View::Reset_impl() {
+IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::Allocation::Reset_impl() {
 }

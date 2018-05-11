@@ -63,14 +63,14 @@ private:
         // destructor
         virtual ~Allocation() override final;
 
+        // member variables
+        BEAT_PRIMITIVE* m_beat_base_address;
+        uint32_t m_num_beats;
+
     private:
         // rule of three
         Allocation(const Allocation&);
         Allocation& operator=(const Allocation&);
-
-        // member variables
-        BEAT_PRIMITIVE** const m_beat_index;
-        uint32_t m_num_beats;
 
         // CDMANode
         virtual uint32_t GetBaseAddress_impl() const final;
@@ -89,14 +89,14 @@ private:
 
     const uint8_t m_num_allocations_max;
     uint8_t m_num_allocations;
-    ALLOCATION* m_allocations;
-    ALLOCATION* m_allocation_active;
+    Allocation** m_allocations;
+    Allocation* m_allocation_active;
     uint8_t m_allocation_tail_index;
 
     // member functions
-    bool IsBufferFull() const;
-    ALLOCATION& GetAllocation(const uint8_t) const;
-    ALLOCATION* const GetAllocationActive() const;
+    bool IsPoolFull() const;
+    Allocation& GetAllocation(const uint8_t) const;
+    Allocation* const GetAllocationActive() const;
     RESULT RebaseAllocationIfNeeded(const uint32_t beatsToAdd);
 };
 
