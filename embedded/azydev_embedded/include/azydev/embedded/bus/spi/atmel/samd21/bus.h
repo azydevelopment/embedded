@@ -102,8 +102,8 @@ public:
         // DMA
         bool is_dma_driven                 = false;
         CDMAEngine<uint16_t>* dma_engine   = nullptr;
-        CDMANode<uint16_t>* dma_node_write = nullptr;
-        CDMANode<uint16_t>* dma_node_read  = nullptr;
+        IDMANode<uint16_t>* dma_node_write = nullptr;
+        IDMANode<uint16_t>* dma_node_read  = nullptr;
     };
 
     struct PIN_CONFIG_DESC

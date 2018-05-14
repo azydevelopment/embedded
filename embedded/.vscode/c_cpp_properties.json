@@ -3,8 +3,9 @@
         {
             "name": "x64",
             "includePath": [
-                "${env:INCLUDE}",
-                "${workspaceRoot}/azydev_embedded/include/"
+                "${workspaceRoot}/azydev_embedded/include/",
+                "C:\\Program Files (x86)\\Atmel\\Studio\\7.0\\toolchain\\arm\\arm-gnu-toolchain\\lib\\gcc\\arm-none-eabi\\6.3.1\\include",
+                "C:\\Program Files (x86)\\Atmel\\Studio\\7.0\\toolchain\\arm\\arm-gnu-toolchain\\arm-none-eabi\\include\\c++\\6.3.1"
             ],
             "defines": [
                 "_DEBUG",
@@ -13,8 +14,9 @@
             "intelliSenseMode": "msvc-x64",
             "browse": {
                 "path": [
-                    "${env:INCLUDE}",
-                    "${workspaceRoot}/azydev_embedded/include/"
+                    "${workspaceRoot}/azydev_embedded",
+                    "C:\\Program Files (x86)\\Atmel\\Studio\\7.0\\toolchain\\arm\\arm-gnu-toolchain\\lib\\gcc\\arm-none-eabi\\6.3.1\\include",
+                    "C:\\Program Files (x86)\\Atmel\\Studio\\7.0\\toolchain\\arm\\arm-gnu-toolchain\\arm-none-eabi\\include\\c++\\6.3.1"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
@@ -23,5 +25,5 @@
             "cppStandard": "c++17"
         }
     ],
-    "version": 3
+    "version": 4
 }

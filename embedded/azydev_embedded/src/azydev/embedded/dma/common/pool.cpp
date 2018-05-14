@@ -46,7 +46,6 @@ CDMAPool<BEAT_PRIMITIVE>::CDMAPool(const DESC& desc)
 
     // actually create the allocation objects
     typename Allocation::DESC allocationDesc = {};
-    allocationDesc.is_incrementing           = true;
     for (uint8_t i = 0; i < desc.num_allocations_max; i++) {
         m_allocations[i] = new Allocation(allocationDesc);
     }
@@ -67,12 +66,14 @@ CDMAPool<BEAT_PRIMITIVE>::~CDMAPool() {
 // NVI
 
 template<typename BEAT_PRIMITIVE>
-IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::PushAllocation() {
+IDMAEntity::RESULT
+CDMAPool<BEAT_PRIMITIVE>::PushAllocation(IDMANode<BEAT_PRIMITIVE>** const outNode) {
     RESULT result = RESULT::UNDEFINED;
 
     // check if we have space for another allocation
     if (IsPoolFull()) {
-        result = RESULT::FAIL_ERROR;
+        *outNode = nullptr;
+        result   = RESULT::FAIL_ERROR;
     } else {
         // populate new allocation
         uint8_t allocationNewIndex =
@@ -95,6 +96,8 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::PushAllocation() {
         // update tracking state
         m_num_allocations++;
         m_allocation_active = &allocationNew;
+
+        *outNode = m_allocation_active;
 
         result = RESULT::SUCCESS;
     }
@@ -172,7 +175,13 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RecordRead(const uint32_t numBeats)
             // get currently active allocation
             Allocation& allocationActive = *GetAllocationActive();
 
-            // track new beat
+            // zero out data
+            memset(
+                (allocationActive.m_beat_base_address + allocationActive.m_num_beats,
+                0,
+                numBeats);
+
+            // track new beats
             allocationActive.m_num_beats += numBeats;
             m_num_beats++;
         }
@@ -220,12 +229,12 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RebaseAllocationIfNeeded(const uint
     // check if there's enough space at the beginning of the data buffer
     Allocation* allocationActive = GetAllocationActive();
 
-    BEAT_PRIMITIVE* allocationNextBeat =
-        allocationActive->m_beat_base_address + allocationActive->m_num_beats;
+    BEAT_PRIMITIVE* allocationNewLastBeat =
+        allocationActive->m_beat_base_address + allocationActive->m_num_beats + beatsToAdd - 1;
     BEAT_PRIMITIVE* poolBeatEnd = m_data + m_num_beats_max;
 
-    // if at the end of the buffer
-    if (allocationNextBeat >= poolBeatEnd) {
+    // if won't fit at the end of the buffer
+    if (allocationNewLastBeat >= poolBeatEnd) {
         // if we can fit this allocation at the start of this buffer
         if (allocationActive->m_num_beats + beatsToAdd <= m_beat_tail_index) {
             // copy over this allocation's data to the start of the data buffer
@@ -241,14 +250,14 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RebaseAllocationIfNeeded(const uint
             result = RESULT::FAIL_ERROR;
         }
     } else {
-        // if we're not at the end of the buffer, don't do anything
+        // if we're not at the end of the buffer, don't need to do anything
         result = RESULT::SUCCESS;
     }
 
     return result;
 }
 
-/* CDMAPool::View */
+/* CDMAPool::Allocation */
 
 /* PUBLIC */
 
@@ -256,7 +265,7 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::RebaseAllocationIfNeeded(const uint
 
 template<typename BEAT_PRIMITIVE>
 CDMAPool<BEAT_PRIMITIVE>::Allocation::Allocation(const DESC& desc)
-    : CDMANode<BEAT_PRIMITIVE>(desc)
+    : IDMANode<BEAT_PRIMITIVE>(desc)
     , m_beat_base_address(nullptr)
     , m_num_beats(0) {
 }
@@ -272,6 +281,16 @@ CDMAPool<BEAT_PRIMITIVE>::Allocation::~Allocation() {
 template<typename BEAT_PRIMITIVE>
 uint32_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetBaseAddress_impl() const {
     return reinterpret_cast<uint32_t>(m_beat_base_address);
+}
+
+template<typename BEAT_PRIMITIVE>
+uint32_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetNumBeats_impl() const {
+    return m_num_beats;
+}
+
+template<typename BEAT_PRIMITIVE>
+bool CDMAPool<BEAT_PRIMITIVE>::Allocation::IsIncrementing_impl() const {
+    return m_num_beats > 1;
 }
 
 template<typename BEAT_PRIMITIVE>

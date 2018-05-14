@@ -27,34 +27,39 @@
 // constructor
 
 template<typename BEAT_PRIMITIVE>
-CDMANode<BEAT_PRIMITIVE>::CDMANode(const DESC& desc)
-    : m_is_incrementing(desc.is_incrementing) {
+IDMANode<BEAT_PRIMITIVE>::IDMANode(const DESC& desc)
+    : IDMAEntity() {
 }
 
 // destructor
 
 template<typename BEAT_PRIMITIVE>
-CDMANode<BEAT_PRIMITIVE>::~CDMANode() {
+IDMANode<BEAT_PRIMITIVE>::~IDMANode() {
 }
 
 // NVI
 
 template<typename BEAT_PRIMITIVE>
-uint8_t CDMANode<BEAT_PRIMITIVE>::GetSizeOfBeatPrimitive() const {
+uint8_t IDMANode<BEAT_PRIMITIVE>::GetSizeOfBeatPrimitive() const {
     return sizeof(BEAT_PRIMITIVE);
 }
 
 template<typename BEAT_PRIMITIVE>
-uint32_t CDMANode<BEAT_PRIMITIVE>::GetBaseAddress() const {
+uint32_t IDMANode<BEAT_PRIMITIVE>::GetBaseAddress() const {
     return GetBaseAddress_impl();
 }
 
 template<typename BEAT_PRIMITIVE>
-bool CDMANode<BEAT_PRIMITIVE>::IsIncrementing() const {
-    return m_is_incrementing;
+uint32_t IDMANode<BEAT_PRIMITIVE>::GetNumBeats() const {
+    return GetNumBeats_impl();
 }
 
 template<typename BEAT_PRIMITIVE>
-IDMAEntity::RESULT CDMANode<BEAT_PRIMITIVE>::Reset() {
+bool IDMANode<BEAT_PRIMITIVE>::IsIncrementing() const {
+    return IsIncrementing_impl();
+}
+
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT IDMANode<BEAT_PRIMITIVE>::Reset() {
     return Reset_impl();
 }

@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 template<typename BEAT_PRIMITIVE>
-class CDMANode;
+class IDMANode;
 
 template<typename BEAT_PRIMITIVE>
 class CDMATransfer : public IDMAEntity
@@ -44,8 +44,8 @@ public:
     struct STEP_DESC
     {
         uint32_t num_beats                         = 0;
-        CDMANode<BEAT_PRIMITIVE>* node_source      = nullptr;
-        CDMANode<BEAT_PRIMITIVE>* node_destination = nullptr;
+        IDMANode<BEAT_PRIMITIVE>* node_source      = nullptr;
+        IDMANode<BEAT_PRIMITIVE>* node_destination = nullptr;
     };
 
     struct CONFIG_DESC

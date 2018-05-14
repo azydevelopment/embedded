@@ -27,39 +27,38 @@
 #include <stdint.h>
 
 template<typename BEAT_PRIMITIVE>
-class CDMANode : public IDMAEntity
+class IDMANode : public IDMAEntity
 {
 public:
     struct DESC
     {
-        bool is_incrementing = false;
     };
 
     // constructor
-    CDMANode(const DESC&);
+    IDMANode(const DESC&);
 
     // destructor
-    virtual ~CDMANode();
+    virtual ~IDMANode();
 
     // NVI
     virtual uint8_t GetSizeOfBeatPrimitive() const final;
     virtual uint32_t GetBaseAddress() const final;
+    virtual uint32_t GetNumBeats() const final;
     virtual bool IsIncrementing() const final;
     virtual RESULT Reset() final;
 
 private:
     // rule of three
-    CDMANode(const CDMANode&);
-    CDMANode& operator=(const CDMANode&);
-
-    // member variables
-    const bool m_is_incrementing;
+    IDMANode(const IDMANode&);
+    IDMANode& operator=(const IDMANode&);
 
     // abstract
     virtual uint32_t GetBaseAddress_impl() const = 0;
+    virtual uint32_t GetNumBeats_impl() const    = 0;
+    virtual bool IsIncrementing_impl() const     = 0;
     virtual RESULT Reset_impl()                  = 0;
 };
 
 /* FORWARD DECLARED TEMPLATES */
-template class CDMANode<uint8_t>;
-template class CDMANode<uint16_t>;
+template class IDMANode<uint8_t>;
+template class IDMANode<uint16_t>;

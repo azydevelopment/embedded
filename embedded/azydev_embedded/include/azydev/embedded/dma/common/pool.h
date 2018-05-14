@@ -44,16 +44,16 @@ public:
     virtual ~CDMAPool() override final;
 
     // NVI
-    virtual RESULT PushAllocation() final;
+    virtual RESULT PushAllocation(IDMANode<BEAT_PRIMITIVE>** const outNode) final;
     virtual RESULT PopAllocation() final;
     virtual RESULT RecordWrite(const BEAT_PRIMITIVE) final;
     virtual RESULT RecordRead(const uint32_t numBeats = 1) final;
 
 private:
-    class Allocation final : public CDMANode<BEAT_PRIMITIVE>
+    class Allocation final : public IDMANode<BEAT_PRIMITIVE>
     {
     public:
-        struct DESC : CDMANode<BEAT_PRIMITIVE>::DESC
+        struct DESC : IDMANode<BEAT_PRIMITIVE>::DESC
         {
         };
 
@@ -72,8 +72,10 @@ private:
         Allocation(const Allocation&);
         Allocation& operator=(const Allocation&);
 
-        // CDMANode
+        // IDMANode
         virtual uint32_t GetBaseAddress_impl() const final;
+        virtual uint32_t GetNumBeats_impl() const final;
+        virtual bool IsIncrementing_impl() const final;
         virtual RESULT Reset_impl() final;
     };
 
