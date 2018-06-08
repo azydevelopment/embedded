@@ -66,6 +66,7 @@ private:
         // member variables
         BEAT_PRIMITIVE* m_beat_base_address;
         uint32_t m_num_beats;
+        uint32_t m_num_beats_padding;
 
     private:
         // rule of three
@@ -87,19 +88,19 @@ private:
     const uint32_t m_num_beats_max;
     uint32_t m_num_beats;
     BEAT_PRIMITIVE* m_data;
-    uint32_t m_beat_tail_index;
+    BEAT_PRIMITIVE* m_beat_tail;
 
     const uint8_t m_num_allocations_max;
     uint8_t m_num_allocations;
     Allocation** m_allocations;
-    Allocation* m_allocation_active;
-    uint8_t m_allocation_tail_index;
+    uint8_t m_allocation_active_index;
+    Allocation** m_allocation_tail;
 
     // member functions
-    bool IsPoolFull() const;
-    Allocation& GetAllocation(const uint8_t) const;
-    Allocation* const GetAllocationActive() const;
-    RESULT RebaseAllocationIfNeeded(const uint32_t beatsToAdd);
+    bool IsAllocationAvailable() const;
+    bool IsBeatsAvailable(const uint32_t numBeats = 1) const;
+    bool WouldNeedRebasing(const uint32_t numBeats) const;
+    RESULT RebaseAllocationIfNeeded(const uint32_t beatsToAdd, const bool copyData);
 };
 
 /* FORWARD DECLARED TEMPLATES */
