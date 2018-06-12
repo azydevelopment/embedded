@@ -44,7 +44,8 @@ public:
     virtual ~CDMAPool() override final;
 
     // NVI
-    virtual RESULT PushAllocation(IDMANode<BEAT_PRIMITIVE>** const outNode) final;
+    virtual bool IsAllocationAvailable() const final;
+    virtual RESULT PushAllocation(IDMANode<BEAT_PRIMITIVE>*& outNode) final;
     virtual RESULT PopAllocation() final;
     virtual RESULT RecordWrite(const BEAT_PRIMITIVE) final;
     virtual RESULT RecordRead(const uint32_t numBeats = 1) final;
@@ -97,7 +98,6 @@ private:
     Allocation** m_allocation_tail;
 
     // member functions
-    bool IsAllocationAvailable() const;
     bool IsBeatsAvailable(const uint32_t numBeats = 1) const;
     bool WouldNeedRebasing(const uint32_t numBeats) const;
     RESULT RebaseAllocationIfNeeded(const uint32_t beatsToAdd, const bool copyData);
