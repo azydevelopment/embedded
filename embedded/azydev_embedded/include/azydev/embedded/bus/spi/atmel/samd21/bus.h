@@ -25,12 +25,19 @@
 #include <azydev/embedded/util/binary.h>
 
 #include <azydev/embedded/bus/spi/common/bus.h>
-#include <azydev/embedded/dma/atmel/samd21/engine.h>
-#include <azydev/embedded/dma/atmel/samd21/transfer.h>
 
 #include <asf/sam0/drivers/sercom/sercom.h>
 
 class CPinsAtmelSAMD21;
+
+template<typename BEAT_PRIMITIVE>
+class CDMAEngine;
+
+template<typename BEAT_PRIMITIVE>
+class CDMAPool;
+
+template<typename BEAT_PRIMITIVE>
+class CDMATransferAtmelSAMD21;
 
 class CSPIBusAtmelSAMD21 final : public CSPIBus<uint16_t>
 {
@@ -100,10 +107,10 @@ public:
         bool enable_interrupt_data_register_empty   = false;
 
         // DMA
-        bool is_dma_driven                 = false;
-        CDMAEngine<uint16_t>* dma_engine   = nullptr;
-        IDMANode<uint16_t>* dma_node_write = nullptr;
-        IDMANode<uint16_t>* dma_node_read  = nullptr;
+        bool is_dma_driven                              = false;
+        CDMAEngine<uint16_t>* dma_engine                = nullptr;
+        CDMAPool<uint16_t>* dma_pool                    = nullptr;
+        CDMATransferAtmelSAMD21<uint16_t>* dma_transfer = nullptr;
     };
 
     struct PIN_CONFIG_DESC
@@ -129,8 +136,6 @@ public:
     virtual ~CSPIBusAtmelSAMD21() override;
 
 protected:
-    bool IsDMADriven() const;
-
     // CSPIBus
     virtual bool IsImmediate() const override final;
 
@@ -144,12 +149,26 @@ private:
         ERROR = 7
     };
 
+    enum class DMA_MODE : uint8_t
+    {
+        READ,
+        WRITE,
+        UNDEFINED = 255
+    };
+
     // member variables
     SercomSpi* m_sercom_spi;
     CPinsAtmelSAMD21& m_service_pins;
     PIN_CONFIG_DESC m_pin_config;
     CONFIG_DESC m_bus_config;
     DUPLEX_MODE m_duplex_mode;
+    DMA_MODE m_dma_mode;
+
+    // member functions
+
+    CONFIG_DESC& GetConfig();
+    bool IsDMADriven() const;
+    bool IsInDMAMode(DMA_MODE const) const;
 
     // CSPIEntity
     virtual STATUS SetRole_impl(const ROLE) override final;

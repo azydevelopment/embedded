@@ -54,6 +54,11 @@ void CDMATransfer<BEAT_PRIMITIVE>::Reset(const uint8_t id) {
 }
 
 template<typename BEAT_PRIMITIVE>
+bool CDMATransfer<BEAT_PRIMITIVE>::IsStepAvailable() const {
+    return IsStepAvailable_impl();
+}
+
+template<typename BEAT_PRIMITIVE>
 IDMAEntity::RESULT CDMATransfer<BEAT_PRIMITIVE>::AddStep(const STEP_DESC& step) {
     m_num_beats += step.num_beats;
     return AddStep_impl(step);

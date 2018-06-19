@@ -49,14 +49,10 @@ public:
     };
 
     struct CONFIG_DESC
-    {
-        OnTransferEnded callback_on_transfer_ended = nullptr;
-    };
+    { OnTransferEnded callback_on_transfer_ended = nullptr; };
 
     struct DESC
-    {
-        uint8_t id_initial = 0;
-    };
+    { uint8_t id_initial = 0; };
 
     // destructor
     virtual ~CDMATransfer();
@@ -64,6 +60,7 @@ public:
     // NVI
     virtual uint8_t GetId() volatile const final;
     virtual void Reset(const uint8_t id) final;
+    virtual bool IsStepAvailable() const final;
     virtual RESULT AddStep(const STEP_DESC&) final;
     virtual uint32_t GetNumBeats() const final;
 
@@ -82,6 +79,7 @@ private:
 
     // abstract
     virtual void Reset_impl()                     = 0;
+    virtual bool IsStepAvailable_impl() const     = 0;
     virtual RESULT AddStep_impl(const STEP_DESC&) = 0;
 };
 

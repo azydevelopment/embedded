@@ -44,7 +44,7 @@ CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::~CDMATransferAtmelSAMD21() {
     delete[] m_descriptor_chain;
 }
 
-// member functions
+// NVI
 
 template<typename BEAT_PRIMITIVE>
 const typename CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::DESCRIPTOR
@@ -76,6 +76,11 @@ void CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::Reset_impl() {
     // invalidate the first descriptor
     m_descriptor_chain->btctrl.bits.valid       = 0;
     m_descriptor_chain->next_descriptor_address = 0;
+}
+
+template<typename BEAT_PRIMITIVE>
+bool CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::IsStepAvailable_impl() const {
+    return GetCurrentStep() < GetNumStepsMax();
 }
 
 template<typename BEAT_PRIMITIVE>

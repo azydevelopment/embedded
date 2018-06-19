@@ -22,7 +22,9 @@
 
 #include <azydev/embedded/bus/spi/atmel/samd21/bus.h>
 
+#include <azydev/embedded/dma/atmel/samd21/transfer.h>
 #include <azydev/embedded/dma/common/engine.h>
+#include <azydev/embedded/dma/common/pool.h>
 #include <azydev/embedded/pins/atmel/samd21/pins.h>
 #include <azydev/embedded/util/binary.h>
 
@@ -36,17 +38,14 @@ CSPIBusAtmelSAMD21::CSPIBusAtmelSAMD21(const DESC& desc, CPinsAtmelSAMD21& pins)
     , m_service_pins(pins)
     , m_pin_config(desc.pin_config)
     , m_bus_config({})
-    , m_duplex_mode(DUPLEX_MODE::UNDEFINED) {
+    , m_duplex_mode(DUPLEX_MODE::UNDEFINED)
+    , m_dma_mode(DMA_MODE::UNDEFINED) {
 }
 
 CSPIBusAtmelSAMD21::~CSPIBusAtmelSAMD21() {
 }
 
 /* PROTECTED */
-
-bool CSPIBusAtmelSAMD21::IsDMADriven() const {
-    return m_bus_config.is_dma_driven;
-}
 
 // CSPIBus
 
@@ -55,6 +54,20 @@ bool CSPIBusAtmelSAMD21::IsImmediate() const {
 }
 
 /* PRIVATE */
+
+// member functions
+
+CSPIBusAtmelSAMD21::CONFIG_DESC& CSPIBusAtmelSAMD21::GetConfig() {
+    return m_bus_config;
+}
+
+bool CSPIBusAtmelSAMD21::IsDMADriven() const {
+    return m_bus_config.is_dma_driven;
+}
+
+bool CSPIBusAtmelSAMD21::IsInDMAMode(DMA_MODE const mode) const {
+    return m_dma_mode == mode;
+}
 
 // CSPIEntity
 
@@ -221,23 +234,40 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::Read_impl(uint16_t& outData) {
     // TODO ERROR_HANDLING: RX buffer overflow
     // TODO IMPLEMENT: DMA driven reads
 
-    STATUS result = STATUS::OK;
+    STATUS result = STATUS::UNDEFINED;
 
-    while (!Binary::BC(m_sercom_spi->INTFLAG.reg, static_cast<uint8_t>(REG_INTFLAG::RXC))) {
-        // TODO ERROR_HANDLING: Timeout
-    }
+    if (IsDMADriven()) {
+        // add a new DMA step if not yet in the right mode
+        if (!IsInDMAMode(DMA_MODE::READ)) {
+            CDMATransfer<uint16_t>& transfer = *GetConfig().dma_transfer;
+            CDMAPool<uint16_t>& pool         = *GetConfig().dma_pool;
 
-    if (result == STATUS::OK) {
-        switch (m_bus_config.character_size) {
-        case CHARACTER_SIZE::BITS_8:
-            outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 8);
-            break;
-        case CHARACTER_SIZE::BITS_9:
-            outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 9);
-            break;
-        default:
-            // TODO ERROR_HANDLING
-            break;
+            if (transfer.IsStepAvailable() && pool.IsAllocationAvailable()) {
+                CDMATransferAtmelSAMD21<uint16_t>::STEP_DESC descStep = {};
+
+                transfer.AddStep(descStep);
+
+                // pool.PushAllocation()
+            }
+        }
+    } else {
+        while (!Binary::BC(m_sercom_spi->INTFLAG.reg, static_cast<uint8_t>(REG_INTFLAG::RXC))) {
+            // TODO ERROR_HANDLING: Timeout
+        }
+
+        if (result == STATUS::OK) {
+            switch (m_bus_config.character_size) {
+            case CHARACTER_SIZE::BITS_8:
+                outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 8);
+                break;
+            case CHARACTER_SIZE::BITS_9:
+                outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 9);
+                break;
+            default:
+                // TODO ERROR_HANDLING
+                result = STATUS::ERROR_UNKNOWN;
+                break;
+            }
         }
     }
     return result;
@@ -245,8 +275,11 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::Read_impl(uint16_t& outData) {
 
 CSPIEntity::STATUS CSPIBusAtmelSAMD21::Write_impl(const uint16_t data) {
     STATUS result = STATUS::UNDEFINED;
+
     if (IsDMADriven()) {
-        // GetDMAPacket().Write(data);
+        // add a new DMA step if not yet in the right mode
+        if (!IsInDMAMode(DMA_MODE::WRITE)) {
+        }
     } else {
         switch (m_bus_config.character_size) {
         case CHARACTER_SIZE::BITS_8:
@@ -257,6 +290,7 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::Write_impl(const uint16_t data) {
             break;
         default:
             // TODO ERROR_HANDLING
+            result = STATUS::ERROR_UNKNOWN;
             break;
         }
 

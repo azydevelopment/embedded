@@ -175,12 +175,13 @@ public:
     struct STEP_DESC : CDMATransfer<BEAT_PRIMITIVE>::STEP_DESC
     {
         typename DESCRIPTOR::EVENT_OUTPUT_SELECTION event_output_selection =
-           DESCRIPTOR::EVENT_OUTPUT_SELECTION::DISABLED;
+            DESCRIPTOR::EVENT_OUTPUT_SELECTION::DISABLED;
         typename DESCRIPTOR::BLOCK_COMPLETED_ACTION block_completed_action =
             DESCRIPTOR::BLOCK_COMPLETED_ACTION::DISABLE_IF_LAST;
-        typename DESCRIPTOR::BEAT_SIZE beat_size               = DESCRIPTOR::BEAT_SIZE::BITS_8;
-        typename DESCRIPTOR::STEP_SIZE_SELECT step_size_select = DESCRIPTOR::STEP_SIZE_SELECT::DESTINATION;
-        typename DESCRIPTOR::STEP_SIZE step_size               = DESCRIPTOR::STEP_SIZE::X1;
+        typename DESCRIPTOR::BEAT_SIZE beat_size = DESCRIPTOR::BEAT_SIZE::BITS_8;
+        typename DESCRIPTOR::STEP_SIZE_SELECT step_size_select =
+            DESCRIPTOR::STEP_SIZE_SELECT::DESTINATION;
+        typename DESCRIPTOR::STEP_SIZE step_size = DESCRIPTOR::STEP_SIZE::X1;
     };
 
     struct CONFIG_DESC : CDMATransfer<BEAT_PRIMITIVE>::CONFIG_DESC
@@ -198,9 +199,7 @@ public:
     };
 
     struct DESC : CDMATransfer<BEAT_PRIMITIVE>::DESC
-    {
-        uint8_t num_steps_max = 0;
-    };
+    { uint8_t num_steps_max = 0; };
 
     // constructor
     CDMATransferAtmelSAMD21(const DESC&);
@@ -208,7 +207,7 @@ public:
     // destructor
     virtual ~CDMATransferAtmelSAMD21();
 
-    // member functions
+    // NVI
     virtual const DESCRIPTOR GetBaseDescriptor() const final;
 
 private:
@@ -227,7 +226,9 @@ private:
 
     // CDMATransfer
     virtual void Reset_impl() override final;
-    virtual IDMAEntity::RESULT AddStep_impl(const typename CDMATransfer<BEAT_PRIMITIVE>::STEP_DESC&) override final;
+    virtual bool IsStepAvailable_impl() const override final;
+    virtual IDMAEntity::RESULT
+    AddStep_impl(const typename CDMATransfer<BEAT_PRIMITIVE>::STEP_DESC&) override final;
 };
 
 /* FORWARD DECLARED TEMPLATES */
