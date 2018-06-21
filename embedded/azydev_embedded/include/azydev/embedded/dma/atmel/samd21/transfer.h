@@ -226,7 +226,7 @@ private:
 
     // CDMATransfer
     virtual void Reset_impl() override final;
-    virtual bool IsStepAvailable_impl() const override final;
+    virtual bool IsStepAvailable_impl(uint8_t const numSteps) const override final;
     virtual IDMAEntity::RESULT
     AddStep_impl(const typename CDMATransfer<BEAT_PRIMITIVE>::STEP_DESC&) override final;
 };

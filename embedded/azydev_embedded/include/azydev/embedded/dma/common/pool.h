@@ -45,7 +45,9 @@ public:
 
     // NVI
     virtual bool IsAllocationAvailable() const final;
-    virtual RESULT PushAllocation(IDMANode<BEAT_PRIMITIVE>*& outNode) final;
+    virtual const IDMANode<BEAT_PRIMITIVE>* const
+    GetAllocationDMANode(uint8_t const allocationId) const final;
+    virtual RESULT PushAllocation(uint8_t& allocationId) final;
     virtual RESULT PopAllocation() final;
     virtual RESULT RecordWrite(const BEAT_PRIMITIVE) final;
     virtual RESULT RecordRead(const uint32_t numBeats = 1) final;
@@ -55,8 +57,7 @@ private:
     {
     public:
         struct DESC : IDMANode<BEAT_PRIMITIVE>::DESC
-        {
-        };
+        {};
 
         // constructor
         Allocation(const DESC&);
@@ -76,7 +77,6 @@ private:
 
         // IDMANode
         virtual uint32_t GetBaseAddress_impl() const final;
-        virtual uint32_t GetNumBeats_impl() const final;
         virtual bool IsIncrementing_impl() const final;
         virtual RESULT Reset_impl() final;
     };

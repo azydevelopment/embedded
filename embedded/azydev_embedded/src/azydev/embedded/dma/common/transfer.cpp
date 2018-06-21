@@ -54,8 +54,8 @@ void CDMATransfer<BEAT_PRIMITIVE>::Reset(const uint8_t id) {
 }
 
 template<typename BEAT_PRIMITIVE>
-bool CDMATransfer<BEAT_PRIMITIVE>::IsStepAvailable() const {
-    return IsStepAvailable_impl();
+bool CDMATransfer<BEAT_PRIMITIVE>::IsStepAvailable(uint8_t const numSteps) const {
+    return IsStepAvailable_impl(numSteps);
 }
 
 template<typename BEAT_PRIMITIVE>

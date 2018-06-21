@@ -74,7 +74,13 @@ bool CDMAPool<BEAT_PRIMITIVE>::IsAllocationAvailable() const {
 }
 
 template<typename BEAT_PRIMITIVE>
-IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::PushAllocation(IDMANode<BEAT_PRIMITIVE>*& outNode) {
+const IDMANode<BEAT_PRIMITIVE>* const
+CDMAPool<BEAT_PRIMITIVE>::GetAllocationDMANode(uint8_t const allocationId) const {
+    return m_allocations[allocationId];
+}
+
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::PushAllocation(uint8_t& allocationId) {
     RESULT result = RESULT::UNDEFINED;
 
     // check if we have space for another allocation and more beat space
@@ -101,12 +107,11 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::PushAllocation(IDMANode<BEAT_PRIMIT
         m_num_allocations++;
         m_allocation_active_index = allocationNewIndex;
 
-        outNode = &allocationNew;
+        allocationId = m_allocation_active_index;
 
         result = RESULT::SUCCESS;
     } else {
-        outNode = nullptr;
-        result  = RESULT::FAIL_ERROR;
+        result = RESULT::FAIL_ERROR;
     }
 
     return result;
@@ -134,6 +139,8 @@ IDMAEntity::RESULT CDMAPool<BEAT_PRIMITIVE>::PopAllocation() {
 
             m_allocation_tail = &m_allocations[allocationNewTailIndex];
             m_beat_tail       = (*m_allocation_tail)->m_beat_base_address;
+        } else {
+            // TODO IMPLEMENT: Reset beat tail to 0 if desired
         }
 
         result = RESULT::SUCCESS;
@@ -278,11 +285,6 @@ CDMAPool<BEAT_PRIMITIVE>::Allocation::~Allocation() {
 template<typename BEAT_PRIMITIVE>
 uint32_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetBaseAddress_impl() const {
     return reinterpret_cast<uint32_t>(m_beat_base_address);
-}
-
-template<typename BEAT_PRIMITIVE>
-uint32_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetNumBeats_impl() const {
-    return m_num_beats;
 }
 
 template<typename BEAT_PRIMITIVE>

@@ -43,9 +43,9 @@ public:
 
     struct STEP_DESC
     {
-        uint32_t num_beats                         = 0;
-        IDMANode<BEAT_PRIMITIVE>* node_source      = nullptr;
-        IDMANode<BEAT_PRIMITIVE>* node_destination = nullptr;
+        uint32_t num_beats                               = 0;
+        const IDMANode<BEAT_PRIMITIVE>* node_source      = nullptr;
+        const IDMANode<BEAT_PRIMITIVE>* node_destination = nullptr;
     };
 
     struct CONFIG_DESC
@@ -60,7 +60,7 @@ public:
     // NVI
     virtual uint8_t GetId() volatile const final;
     virtual void Reset(const uint8_t id) final;
-    virtual bool IsStepAvailable() const final;
+    virtual bool IsStepAvailable(uint8_t const numSteps = 1) const final;
     virtual RESULT AddStep(const STEP_DESC&) final;
     virtual uint32_t GetNumBeats() const final;
 
@@ -78,9 +78,9 @@ private:
     uint32_t m_num_beats;
 
     // abstract
-    virtual void Reset_impl()                     = 0;
-    virtual bool IsStepAvailable_impl() const     = 0;
-    virtual RESULT AddStep_impl(const STEP_DESC&) = 0;
+    virtual void Reset_impl()                                       = 0;
+    virtual bool IsStepAvailable_impl(uint8_t const numSteps) const = 0;
+    virtual RESULT AddStep_impl(const STEP_DESC&)                   = 0;
 };
 
 /* FORWARD DECLARED TEMPLATES */
