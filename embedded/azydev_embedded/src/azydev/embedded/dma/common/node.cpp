@@ -50,11 +50,6 @@ uint32_t IDMANode<BEAT_PRIMITIVE>::GetBaseAddress() const {
 }
 
 template<typename BEAT_PRIMITIVE>
-uint32_t IDMANode<BEAT_PRIMITIVE>::GetNumBeats() const {
-    return GetNumBeats_impl();
-}
-
-template<typename BEAT_PRIMITIVE>
 bool IDMANode<BEAT_PRIMITIVE>::IsIncrementing() const {
     return IsIncrementing_impl();
 }

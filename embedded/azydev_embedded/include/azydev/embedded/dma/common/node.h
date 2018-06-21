@@ -31,8 +31,7 @@ class IDMANode : public IDMAEntity
 {
 public:
     struct DESC
-    {
-    };
+    {};
 
     // constructor
     IDMANode(const DESC&);
@@ -43,7 +42,6 @@ public:
     // NVI
     virtual uint8_t GetSizeOfBeatPrimitive() const final;
     virtual uint32_t GetBaseAddress() const final;
-    virtual uint32_t GetNumBeats() const final;
     virtual bool IsIncrementing() const final;
     virtual RESULT Reset() final;
 
@@ -54,7 +52,6 @@ private:
 
     // abstract
     virtual uint32_t GetBaseAddress_impl() const = 0;
-    virtual uint32_t GetNumBeats_impl() const    = 0;
     virtual bool IsIncrementing_impl() const     = 0;
     virtual RESULT Reset_impl()                  = 0;
 };
