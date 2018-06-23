@@ -288,6 +288,11 @@ uint32_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetBaseAddress_impl() const {
 }
 
 template<typename BEAT_PRIMITIVE>
+uint32_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetNumBeats_impl() const {
+	return m_num_beats;
+}
+
+template<typename BEAT_PRIMITIVE>
 bool CDMAPool<BEAT_PRIMITIVE>::Allocation::IsIncrementing_impl() const {
     return m_num_beats > 1;
 }

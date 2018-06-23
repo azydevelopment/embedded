@@ -76,9 +76,10 @@ private:
         Allocation& operator=(const Allocation&);
 
         // IDMANode
-        virtual uint32_t GetBaseAddress_impl() const final;
-        virtual bool IsIncrementing_impl() const final;
-        virtual RESULT Reset_impl() final;
+        virtual uint32_t GetBaseAddress_impl() const override final;
+        virtual uint32_t GetNumBeats_impl() const override final;
+        virtual bool IsIncrementing_impl() const override final;
+        virtual RESULT Reset_impl() override final;
     };
 
     // rule of three
