@@ -120,6 +120,11 @@ CSPIBus<TRANSFER_PRIMITIVE>::CSPIBus(const DESC& desc)
     , m_duplex_mode(DUPLEX_MODE::UNDEFINED) {
 }
 
+template<typename TRANSFER_PRIMITIVE>
+bool CSPIBus<TRANSFER_PRIMITIVE>::IsImmediate() const {
+    return IsImmediate_impl();
+}
+
 /* FORWARD DECLARED TEMPLATES */
 template class CSPIBus<uint8_t>;
 template class CSPIBus<uint16_t>;

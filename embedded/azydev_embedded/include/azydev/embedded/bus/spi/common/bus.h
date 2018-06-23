@@ -92,8 +92,8 @@ protected:
     // constructor
     CSPIBus(const DESC&);
 
-    // abstract
-    virtual bool IsImmediate() const = 0;
+    // NVI
+    virtual bool IsImmediate() const final;
 
 private:
     // rule of three
@@ -108,6 +108,7 @@ private:
     DUPLEX_MODE m_duplex_mode;
 
     // abstract
+    virtual bool IsImmediate_impl() const                = 0;
     virtual void SetConfig_impl(const CONFIG_DESC&)      = 0;
     virtual STATUS SetEnabled_impl(const bool)           = 0;
     virtual STATUS SetDuplexMode_impl(const DUPLEX_MODE) = 0;
