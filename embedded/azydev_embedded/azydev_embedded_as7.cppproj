@@ -942,6 +942,9 @@
     <Compile Include="include\azydev\embedded\dma\common\node.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\azydev\embedded\dma\common\node_address.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\azydev\embedded\dma\common\pool.h">
       <SubType>compile</SubType>
     </Compile>
@@ -1645,6 +1648,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\azydev\embedded\dma\common\node.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\azydev\embedded\dma\common\node_address.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\azydev\embedded\dma\common\pool.cpp">
