@@ -24,6 +24,7 @@
 
 #include <azydev/embedded/dma/atmel/samd21/engine.h>
 #include <azydev/embedded/dma/atmel/samd21/transfer.h>
+#include <azydev/embedded/dma/common/node_address.h>
 #include <azydev/embedded/dma/common/pool.h>
 #include <azydev/embedded/pins/atmel/samd21/pins.h>
 #include <azydev/embedded/util/binary.h>
