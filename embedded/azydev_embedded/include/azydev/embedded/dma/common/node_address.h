@@ -22,42 +22,37 @@
 
 #pragma once
 
-#include <azydev/embedded/dma/common/entity.h>
+#include <azydev/embedded/dma/common/node.h>
 
 #include <stdint.h>
 
 template<typename BEAT_PRIMITIVE>
-class IDMANode : public IDMAEntity
+class CDMANodeAddress : public IDMANode<BEAT_PRIMITIVE>
 {
 public:
-    struct DESC
-    {};
+    struct DESC : IDMANode<BEAT_PRIMITIVE>::DESC
+    { uintptr_t address = 0; };
 
     // constructor
-    IDMANode(const DESC&);
+    CDMANodeAddress(const DESC&);
 
     // destructor
-    virtual ~IDMANode();
-
-    // NVI
-    virtual uint8_t GetSizeOfBeatPrimitive() const final;
-    virtual uintptr_t GetBaseAddress() const final;
-    virtual uint32_t GetNumBeats() const final;
-    virtual bool IsIncrementing() const final;
-    virtual RESULT Reset() final;
+    virtual ~CDMANodeAddress();
 
 private:
     // rule of three
-    IDMANode(const IDMANode&);
-    IDMANode& operator=(const IDMANode&);
+    CDMANodeAddress(const CDMANodeAddress&);
+    CDMANodeAddress& operator=(const CDMANodeAddress&);
 
-    // abstract
-    virtual uintptr_t GetBaseAddress_impl() const = 0;
-    virtual uint32_t GetNumBeats_impl() const     = 0;
-    virtual bool IsIncrementing_impl() const      = 0;
-    virtual RESULT Reset_impl()                   = 0;
+    // member variables
+    const uintptr_t m_address;
+
+    // IDMANode
+    virtual uintptr_t GetBaseAddress_impl() const override final;
+    virtual uint32_t GetNumBeats_impl() const override final;
+    virtual bool IsIncrementing_impl() const override final;
+    virtual IDMAEntity::RESULT Reset_impl() override final;
 };
 
 /* FORWARD DECLARED TEMPLATES */
-template class IDMANode<uint8_t>;
-template class IDMANode<uint16_t>;
+template class CDMANodeAddress<uint16_t>;

@@ -25,19 +25,20 @@
 #include <azydev/embedded/util/binary.h>
 
 #include <azydev/embedded/bus/spi/common/bus.h>
+#include <azydev/embedded/dma/common/node_address.h>
 
 #include <asf/sam0/drivers/sercom/sercom.h>
 
 class CPinsAtmelSAMD21;
 
 template<typename BEAT_PRIMITIVE>
-class CDMAEngine;
-
-template<typename BEAT_PRIMITIVE>
-class CDMAPool;
+class CDMAEngineAtmelSAMD21;
 
 template<typename BEAT_PRIMITIVE>
 class CDMATransferAtmelSAMD21;
+
+template<typename BEAT_PRIMITIVE>
+class IDMANode;
 
 class CSPIBusAtmelSAMD21 final : public CSPIBus<uint16_t>
 {
@@ -108,8 +109,8 @@ public:
 
         // DMA
         bool is_dma_driven                              = false;
-        CDMAEngine<uint16_t>* dma_engine                = nullptr;
-        CDMAPool<uint16_t>* dma_pool                    = nullptr;
+        uint8_t dma_transfer_id                         = 0;
+        CDMAEngineAtmelSAMD21<uint16_t>* dma_engine     = nullptr;
         CDMATransferAtmelSAMD21<uint16_t>* dma_transfer = nullptr;
     };
 
@@ -135,9 +136,9 @@ public:
     // destructor
     virtual ~CSPIBusAtmelSAMD21() override;
 
-protected:
-    // CSPIBus
-    virtual bool IsImmediate() const override final;
+    // NVI
+    virtual STATUS Write(const IDMANode<uint16_t>&, const uint32_t numBeats) final;
+    virtual STATUS Read(const IDMANode<uint16_t>&, const uint32_t numBeats) final;
 
 private:
     enum class REG_INTFLAG : uint8_t
@@ -149,11 +150,10 @@ private:
         ERROR = 7
     };
 
-    enum class DMA_MODE : uint8_t
+    enum class DMA_TRANSFER_TYPE : uint8_t
     {
         READ,
-        WRITE,
-        UNDEFINED = 255
+        WRITE
     };
 
     // member variables
@@ -162,18 +162,18 @@ private:
     PIN_CONFIG_DESC m_pin_config;
     CONFIG_DESC m_bus_config;
     DUPLEX_MODE m_duplex_mode;
-    DMA_MODE m_dma_mode;
+    CDMANodeAddress<uint16_t>* m_dma_node;
 
     // member functions
-
-    CONFIG_DESC& GetConfig();
-    bool IsDMADriven() const;
-    bool IsInDMAMode(DMA_MODE const) const;
+    CONFIG_DESC GetConfig() const;
+    STATUS
+    ExecuteDMATransfer(const DMA_TRANSFER_TYPE, const IDMANode<uint16_t>&, const uint32_t numBeats);
 
     // CSPIEntity
     virtual STATUS SetRole_impl(const ROLE) override final;
 
     // CSPIBus
+    virtual bool IsImmediate_impl() const override final;
     virtual void SetConfig_impl(const CSPIBus::CONFIG_DESC&) override final;
     virtual STATUS SetEnabled_impl(const bool) override final;
     virtual STATUS SetDuplexMode_impl(const DUPLEX_MODE) override final;

@@ -283,13 +283,13 @@ CDMAPool<BEAT_PRIMITIVE>::Allocation::~Allocation() {
 /* PRIVATE */
 
 template<typename BEAT_PRIMITIVE>
-uint32_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetBaseAddress_impl() const {
-    return reinterpret_cast<uint32_t>(m_beat_base_address);
+uintptr_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetBaseAddress_impl() const {
+    return reinterpret_cast<uintptr_t>(m_beat_base_address);
 }
 
 template<typename BEAT_PRIMITIVE>
 uint32_t CDMAPool<BEAT_PRIMITIVE>::Allocation::GetNumBeats_impl() const {
-	return m_num_beats;
+    return m_num_beats;
 }
 
 template<typename BEAT_PRIMITIVE>

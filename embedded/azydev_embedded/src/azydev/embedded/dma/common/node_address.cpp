@@ -20,44 +20,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE. */
 
-#pragma once
+#include <azydev/embedded/dma/common/node_address.h>
 
-#include <azydev/embedded/dma/common/entity.h>
+/* PUBLIC */
 
-#include <stdint.h>
+// constructor
 
 template<typename BEAT_PRIMITIVE>
-class IDMANode : public IDMAEntity
-{
-public:
-    struct DESC
-    {};
+CDMANodeAddress<BEAT_PRIMITIVE>::CDMANodeAddress(const DESC& desc)
+    : IDMANode<BEAT_PRIMITIVE>(desc)
+    , m_address(desc.address) {
+}
 
-    // constructor
-    IDMANode(const DESC&);
+// destructor
 
-    // destructor
-    virtual ~IDMANode();
+template<typename BEAT_PRIMITIVE>
+CDMANodeAddress<BEAT_PRIMITIVE>::~CDMANodeAddress() {
+}
 
-    // NVI
-    virtual uint8_t GetSizeOfBeatPrimitive() const final;
-    virtual uintptr_t GetBaseAddress() const final;
-    virtual uint32_t GetNumBeats() const final;
-    virtual bool IsIncrementing() const final;
-    virtual RESULT Reset() final;
+/* PRIVATE */
 
-private:
-    // rule of three
-    IDMANode(const IDMANode&);
-    IDMANode& operator=(const IDMANode&);
+// IDMANode
+template<typename BEAT_PRIMITIVE>
+uintptr_t CDMANodeAddress<BEAT_PRIMITIVE>::GetBaseAddress_impl() const {
+    return reinterpret_cast<uintptr_t>(m_address);
+}
 
-    // abstract
-    virtual uintptr_t GetBaseAddress_impl() const = 0;
-    virtual uint32_t GetNumBeats_impl() const     = 0;
-    virtual bool IsIncrementing_impl() const      = 0;
-    virtual RESULT Reset_impl()                   = 0;
-};
+template<typename BEAT_PRIMITIVE>
+uint32_t CDMANodeAddress<BEAT_PRIMITIVE>::GetNumBeats_impl() const {
+    return 1;
+}
 
-/* FORWARD DECLARED TEMPLATES */
-template class IDMANode<uint8_t>;
-template class IDMANode<uint16_t>;
+template<typename BEAT_PRIMITIVE>
+bool CDMANodeAddress<BEAT_PRIMITIVE>::IsIncrementing_impl() const {
+    return false;
+}
+
+template<typename BEAT_PRIMITIVE>
+IDMAEntity::RESULT CDMANodeAddress<BEAT_PRIMITIVE>::Reset_impl() {
+    return IDMAEntity::RESULT::SUCCESS;
+}

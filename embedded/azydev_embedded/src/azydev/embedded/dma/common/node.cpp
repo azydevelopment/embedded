@@ -45,7 +45,7 @@ uint8_t IDMANode<BEAT_PRIMITIVE>::GetSizeOfBeatPrimitive() const {
 }
 
 template<typename BEAT_PRIMITIVE>
-uint32_t IDMANode<BEAT_PRIMITIVE>::GetBaseAddress() const {
+uintptr_t IDMANode<BEAT_PRIMITIVE>::GetBaseAddress() const {
     return GetBaseAddress_impl();
 }
 

@@ -95,7 +95,7 @@ IDMAEntity::RESULT CDMATransferAtmelSAMD21<BEAT_PRIMITIVE>::AddStep_impl(
         const IDMANode<BEAT_PRIMITIVE>* nodeDst = step.node_destination;
 
         // calculate source data address
-        uint32_t addressSrc = 0;
+        uintptr_t addressSrc = 0;
         {
             uint32_t offset = 0;
             if (nodeSrc->IsIncrementing()) {

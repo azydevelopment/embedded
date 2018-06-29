@@ -22,8 +22,8 @@
 
 #include <azydev/embedded/bus/spi/atmel/samd21/bus.h>
 
+#include <azydev/embedded/dma/atmel/samd21/engine.h>
 #include <azydev/embedded/dma/atmel/samd21/transfer.h>
-#include <azydev/embedded/dma/common/engine.h>
 #include <azydev/embedded/dma/common/pool.h>
 #include <azydev/embedded/pins/atmel/samd21/pins.h>
 #include <azydev/embedded/util/binary.h>
@@ -32,50 +32,129 @@
 
 /* PUBLIC */
 
+// constructor
+
 CSPIBusAtmelSAMD21::CSPIBusAtmelSAMD21(const DESC& desc, CPinsAtmelSAMD21& pins)
     : CSPIBus<uint16_t>(desc)
     , m_sercom_spi(desc.sercomSpi)
     , m_service_pins(pins)
     , m_pin_config(desc.pin_config)
     , m_bus_config({})
-    , m_duplex_mode(DUPLEX_MODE::UNDEFINED)
-    , m_dma_mode(DMA_MODE::UNDEFINED) {
+    , m_duplex_mode(DUPLEX_MODE::UNDEFINED) {
+    CDMANodeAddress<uint16_t>::DESC descNode = {};
+    descNode.address                         = reinterpret_cast<uintptr_t>(&m_sercom_spi->DATA.reg);
+
+    m_dma_node = new CDMANodeAddress<uint16_t>(descNode);
 }
+
+// destructor
 
 CSPIBusAtmelSAMD21::~CSPIBusAtmelSAMD21() {
+    delete m_dma_node;
 }
 
-/* PROTECTED */
+// NVI
 
-// CSPIBus
+CSPIEntity::STATUS
+CSPIBusAtmelSAMD21::Write(const IDMANode<uint16_t>& node, const uint32_t numBeats) {
+    // return ExecuteDMATransfer();
+    return STATUS::UNDEFINED;
+}
 
-bool CSPIBusAtmelSAMD21::IsImmediate() const {
-    return !IsDMADriven();
+CSPIEntity::STATUS
+CSPIBusAtmelSAMD21::Read(const IDMANode<uint16_t>& node, const uint32_t numBeats) {
+    return STATUS::UNDEFINED;
 }
 
 /* PRIVATE */
 
 // member functions
 
-CSPIBusAtmelSAMD21::CONFIG_DESC& CSPIBusAtmelSAMD21::GetConfig() {
+CSPIBusAtmelSAMD21::CONFIG_DESC CSPIBusAtmelSAMD21::GetConfig() const {
     return m_bus_config;
 }
 
-bool CSPIBusAtmelSAMD21::IsDMADriven() const {
-    return m_bus_config.is_dma_driven;
-}
+CSPIEntity::STATUS CSPIBusAtmelSAMD21::ExecuteDMATransfer(
+    const DMA_TRANSFER_TYPE transferType,
+    const IDMANode<uint16_t>& node,
+    const uint32_t numBeats) {
+    STATUS status = STATUS::UNDEFINED;
 
-bool CSPIBusAtmelSAMD21::IsInDMAMode(DMA_MODE const mode) const {
-    return m_dma_mode == mode;
+    CONFIG_DESC config              = GetConfig();
+    CDMAEngine<uint16_t>& dmaEngine = *config.dma_engine;
+
+    CDMATransfer<uint16_t>& dmaTransfer = *config.dma_transfer;
+    // add transfer step
+    {
+        // reset the DMA transfer
+        dmaTransfer.Reset(config.dma_transfer_id);
+
+        CDMATransferAtmelSAMD21<uint16_t>::STEP_DESC step = {};
+        step.num_beats                                    = numBeats;
+
+        switch (transferType) {
+        case DMA_TRANSFER_TYPE::READ:
+            step.node_source      = &node;
+            step.node_destination = m_dma_node;
+            break;
+        case DMA_TRANSFER_TYPE::WRITE:
+            step.node_source      = m_dma_node;
+            step.node_destination = &node;
+            break;
+        }
+
+        step.event_output_selection =
+            CDMATransferAtmelSAMD21<uint16_t>::DESCRIPTOR::EVENT_OUTPUT_SELECTION::DISABLED;
+        step.block_completed_action =
+            CDMATransferAtmelSAMD21<uint16_t>::DESCRIPTOR::BLOCK_COMPLETED_ACTION::DISABLE_IF_LAST;
+        step.beat_size = CDMATransferAtmelSAMD21<uint16_t>::DESCRIPTOR::BEAT_SIZE::BITS_16;
+        step.step_size_select =
+            CDMATransferAtmelSAMD21<uint16_t>::DESCRIPTOR::STEP_SIZE_SELECT::DESTINATION;
+        step.step_size = CDMATransferAtmelSAMD21<uint16_t>::DESCRIPTOR::STEP_SIZE::X1;
+
+        dmaTransfer.AddStep(step);
+    }
+
+    // create transfer config
+    CDMATransferAtmelSAMD21<uint16_t>::CONFIG_DESC transferConfig = {};
+    {
+        // transferConfig.callback_on_transfer_ended = &OnTransferEnded;
+        transferConfig.priority = CDMATransferAtmelSAMD21<uint16_t>::PRIORITY::LVL_0;
+        transferConfig.trigger  = CDMATransferAtmelSAMD21<uint16_t>::TRIGGER::SOFTWARE_OR_EVENT;
+        transferConfig.trigger_action =
+            CDMATransferAtmelSAMD21<uint16_t>::TRIGGER_ACTION::START_TRANSACTION;
+        transferConfig.enable_event_output = false;
+        transferConfig.enable_event_input  = false;
+        transferConfig.event_input_action =
+            CDMATransferAtmelSAMD21<uint16_t>::EVENT_INPUT_ACTION::NOACT;
+    }
+
+    // execute the transfer
+    {
+        CDMATransfer<uint16_t>::ITransferControl* transferControl = nullptr;
+        dmaEngine.StartTransfer(dmaTransfer, transferConfig, &transferControl);
+
+        while (transferControl->IsTransferInProgress()) {
+            if (transferControl->IsPendingTrigger()) {
+                transferControl->TriggerTransferStep();
+            }
+        }
+    }
+
+    return status;
 }
 
 // CSPIEntity
 
 CSPIEntity::STATUS CSPIBusAtmelSAMD21::SetRole_impl(const ROLE) {
-    return STATUS::OK;
+    return STATUS::UNDEFINED;
 }
 
 // CSPIBus
+
+bool CSPIBusAtmelSAMD21::IsImmediate_impl() const {
+    return true;
+}
 
 void CSPIBusAtmelSAMD21::SetConfig_impl(const CSPIBus::CONFIG_DESC& busConfig) {
     // TODO ERROR_HANDLING: Dangerous cast
@@ -236,66 +315,47 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::Read_impl(uint16_t& outData) {
 
     STATUS result = STATUS::UNDEFINED;
 
-    if (IsDMADriven()) {
-        // add a new DMA step if not yet in the right mode
-        if (!IsInDMAMode(DMA_MODE::READ)) {
-            CDMATransfer<uint16_t>& transfer = *GetConfig().dma_transfer;
-            CDMAPool<uint16_t>& pool         = *GetConfig().dma_pool;
-
-            if (transfer.IsStepAvailable() && pool.IsAllocationAvailable()) {
-                CDMATransferAtmelSAMD21<uint16_t>::STEP_DESC descStep = {};
-
-                transfer.AddStep(descStep);
-
-                // pool.PushAllocation()
-            }
-        }
-    } else {
-        while (!Binary::BC(m_sercom_spi->INTFLAG.reg, static_cast<uint8_t>(REG_INTFLAG::RXC))) {
-            // TODO ERROR_HANDLING: Timeout
-        }
-
-        if (result == STATUS::OK) {
-            switch (m_bus_config.character_size) {
-            case CHARACTER_SIZE::BITS_8:
-                outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 8);
-                break;
-            case CHARACTER_SIZE::BITS_9:
-                outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 9);
-                break;
-            default:
-                // TODO ERROR_HANDLING
-                result = STATUS::ERROR_UNKNOWN;
-                break;
-            }
-        }
+    while (!Binary::BC(m_sercom_spi->INTFLAG.reg, static_cast<uint8_t>(REG_INTFLAG::RXC))) {
+        // TODO ERROR_HANDLING: Timeout
     }
+
+    switch (m_bus_config.character_size) {
+    case CHARACTER_SIZE::BITS_8:
+        outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 8);
+        result  = STATUS::OK;
+        break;
+    case CHARACTER_SIZE::BITS_9:
+        outData = m_sercom_spi->DATA.reg & Binary::BM<uint16_t>(0, 9);
+        result  = STATUS::OK;
+        break;
+    default:
+        // TODO ERROR_HANDLING
+        result = STATUS::ERROR_UNKNOWN;
+        break;
+    }
+
     return result;
 }
 
 CSPIEntity::STATUS CSPIBusAtmelSAMD21::Write_impl(const uint16_t data) {
     STATUS result = STATUS::UNDEFINED;
 
-    if (IsDMADriven()) {
-        // add a new DMA step if not yet in the right mode
-        if (!IsInDMAMode(DMA_MODE::WRITE)) {
-        }
-    } else {
-        switch (m_bus_config.character_size) {
-        case CHARACTER_SIZE::BITS_8:
-            m_sercom_spi->DATA.reg = Binary::BM<uint16_t>(data, 0, 8);
-            break;
-        case CHARACTER_SIZE::BITS_9:
-            m_sercom_spi->DATA.reg = Binary::BM<uint16_t>(data, 0, 9);
-            break;
-        default:
-            // TODO ERROR_HANDLING
-            result = STATUS::ERROR_UNKNOWN;
-            break;
-        }
+    switch (m_bus_config.character_size) {
+    case CHARACTER_SIZE::BITS_8:
+        m_sercom_spi->DATA.reg = Binary::BM<uint16_t>(data, 0, 8);
+        result                 = STATUS::OK;
+        break;
+    case CHARACTER_SIZE::BITS_9:
+        m_sercom_spi->DATA.reg = Binary::BM<uint16_t>(data, 0, 9);
+        result                 = STATUS::OK;
+        break;
+    default:
+        // TODO ERROR_HANDLING
+        result = STATUS::ERROR_UNKNOWN;
+        break;
+    }
 
-        result = STATUS::OK;
-
+    if (result == STATUS::OK) {
         // wait for transmit
         while (!Binary::BC(m_sercom_spi->INTFLAG.reg, static_cast<uint8_t>(REG_INTFLAG::TXC))) {
             // TODO ERROR_HANDLING: Timeout
@@ -309,9 +369,5 @@ CSPIEntity::STATUS CSPIBusAtmelSAMD21::Write_impl(const uint16_t data) {
 }
 
 CSPIEntity::STATUS CSPIBusAtmelSAMD21::Stop_impl() {
-    // if transmission is actually a deferred transmission
-    if (!IsImmediate()) {
-    }
-
     return STATUS::OK;
 }
