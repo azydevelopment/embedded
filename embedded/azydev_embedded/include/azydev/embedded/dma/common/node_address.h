@@ -31,7 +31,9 @@ class CDMANodeAddress : public IDMANode<BEAT_PRIMITIVE>
 {
 public:
     struct DESC : IDMANode<BEAT_PRIMITIVE>::DESC
-    { uintptr_t address = 0; };
+    {
+        uintptr_t address = 0;
+    };
 
     // constructor
     CDMANodeAddress(const DESC&);
@@ -55,4 +57,5 @@ private:
 };
 
 /* FORWARD DECLARED TEMPLATES */
+template class CDMANodeAddress<uint8_t>;
 template class CDMANodeAddress<uint16_t>;

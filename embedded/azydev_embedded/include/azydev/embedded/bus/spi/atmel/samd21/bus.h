@@ -32,15 +32,15 @@
 class CPinsAtmelSAMD21;
 
 template<typename BEAT_PRIMITIVE>
-class CDMAEngineAtmelSAMD21;
+class CDMAEngine;
 
 template<typename BEAT_PRIMITIVE>
-class CDMATransferAtmelSAMD21;
+class CDMATransfer;
 
 template<typename BEAT_PRIMITIVE>
 class IDMANode;
 
-class CSPIBusAtmelSAMD21 final : public CSPIBus<uint16_t>
+class CSPIBusAtmelSAMD21 final : public CSPIBus<uint8_t>
 {
 public:
     enum class FRAME_FORMAT : uint8_t
@@ -90,7 +90,7 @@ public:
         BITS_9    = 1
     };
 
-    struct CONFIG_DESC : CSPIBus<uint16_t>::CONFIG_DESC
+    struct CONFIG_DESC : CSPIBus<uint8_t>::CONFIG_DESC
     {
         FRAME_FORMAT frame_format                   = FRAME_FORMAT::UNDEFINED;
         bool immediate_buffer_overflow_notification = false;
@@ -99,19 +99,21 @@ public:
         bool enable_manager_worker_select           = false;
         bool enable_worker_select_low_detect        = false;
         bool enable_worker_data_preload             = false;
-        CHARACTER_SIZE character_size               = CHARACTER_SIZE::UNDEFINED;
-        uint8_t baud_rate                           = false;
-        bool enable_interrupt_error                 = false;
-        bool enable_interrupt_worker_select_low     = false;
-        bool enable_interrupt_receive_complete      = false;
-        bool enable_interrupt_transmit_complete     = false;
-        bool enable_interrupt_data_register_empty   = false;
+
+        // TODO IMPLEMENT: 9-bit mode
+        // CHARACTER_SIZE character_size               = CHARACTER_SIZE::UNDEFINED;
+
+        uint8_t baud_rate                         = false;
+        bool enable_interrupt_error               = false;
+        bool enable_interrupt_worker_select_low   = false;
+        bool enable_interrupt_receive_complete    = false;
+        bool enable_interrupt_transmit_complete   = false;
+        bool enable_interrupt_data_register_empty = false;
 
         // DMA
-        bool is_dma_driven                              = false;
-        uint8_t dma_transfer_id                         = 0;
-        CDMAEngineAtmelSAMD21<uint16_t>* dma_engine     = nullptr;
-        CDMATransferAtmelSAMD21<uint16_t>* dma_transfer = nullptr;
+        uint8_t dma_transfer_id             = 0;
+        CDMAEngine<uint8_t>* dma_engine     = nullptr;
+        CDMATransfer<uint8_t>* dma_transfer = nullptr;
     };
 
     struct PIN_CONFIG_DESC
@@ -124,7 +126,7 @@ public:
         DATA_OUT_PINOUT data_out_pinout = DATA_OUT_PINOUT::UNDEFINED;
     };
 
-    struct DESC : CSPIBus<uint16_t>::DESC
+    struct DESC : CSPIBus<uint8_t>::DESC
     {
         SercomSpi* sercomSpi       = nullptr;
         PIN_CONFIG_DESC pin_config = {};
@@ -137,8 +139,8 @@ public:
     virtual ~CSPIBusAtmelSAMD21() override;
 
     // NVI
-    virtual STATUS Write(const IDMANode<uint16_t>&, const uint32_t numBeats) final;
-    virtual STATUS Read(const IDMANode<uint16_t>&, const uint32_t numBeats) final;
+    virtual STATUS Write(const IDMANode<uint8_t>&, const uint32_t numBeats) final;
+    virtual STATUS Read(const IDMANode<uint8_t>&, const uint32_t numBeats) final;
 
 private:
     enum class REG_INTFLAG : uint8_t
@@ -162,12 +164,13 @@ private:
     PIN_CONFIG_DESC m_pin_config;
     CONFIG_DESC m_bus_config;
     DUPLEX_MODE m_duplex_mode;
-    CDMANodeAddress<uint16_t>* m_dma_node;
+    CDMANodeAddress<uint8_t>* m_dma_node;
 
     // member functions
     CONFIG_DESC GetConfig() const;
+    STATUS WaitForTransmit() const;
     STATUS
-    ExecuteDMATransfer(const DMA_TRANSFER_TYPE, const IDMANode<uint16_t>&, const uint32_t numBeats);
+    ExecuteDMATransfer(const DMA_TRANSFER_TYPE, const IDMANode<uint8_t>&, const uint32_t numBeats);
 
     // CSPIEntity
     virtual STATUS SetRole_impl(const ROLE) override final;
@@ -178,7 +181,7 @@ private:
     virtual STATUS SetEnabled_impl(const bool) override final;
     virtual STATUS SetDuplexMode_impl(const DUPLEX_MODE) override final;
     virtual STATUS Start_impl(const uint8_t deviceId) override final;
-    virtual STATUS Write_impl(const uint16_t) override final;
-    virtual STATUS Read_impl(uint16_t&) override final;
+    virtual STATUS Write_impl(const uint8_t) override final;
+    virtual STATUS Read_impl(uint8_t&) override final;
     virtual STATUS Stop_impl() override final;
 };
